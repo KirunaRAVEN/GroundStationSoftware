@@ -314,6 +314,8 @@ def update(frame):
     # ------------------------------- #
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
+    
+    line = dataFile.readline().split(',')
 
     '''
     fpath = 'dummyData.csv'
@@ -333,20 +335,17 @@ def update(frame):
 
         lastFilePosition = dataFile.tell()
     '''
-    line = dataFile.readline().split(',')
+
+    # ---------------------------- #
+    # --- UPDATE DATA IN PLOTS --- #
+    # ---------------------------- #
+
     weight = 0
     for i in range(nGraphs):
         # this trick is from here:
         # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
         y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
-        msg = line[-1].strip('\n')
-        if msg != ' ':
-            msgIsUpdated = True
-    
-    # ---------------------------- #
-    # --- UPDATE DATA IN PLOTS --- #
-    # ---------------------------- #
-
+        
     # update the data and average lines and calculate averages
     for i in range(nGraphs):
         averages[i] = gm.rollingAverage(y_data[i])
@@ -359,14 +358,9 @@ def update(frame):
     # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
     # ----------------------------------------- #
 
-    # dummy cycle indicator list around
-    if frame % 10 == 0:
-        item = indicatorStates[0]
-        indicatorStates.pop(0)
-        indicatorStates.append(item)
-
-    # update the indicator state
+    # get the indicator states and update the indicators
     for i in range(nIndicators):
+        indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
         indicatorObjects[i].setState(indicatorStates[i])
 
     # ----------------------------- #
@@ -402,7 +396,8 @@ def update(frame):
     # --- UPDATE LOG --- #
     # ------------------ #
     
-    if msgIsUpdated == True:
+    msg = line[-1].strip('\n')
+    if msg != ' ':
         logObject.updateLog(msg)
     
 
