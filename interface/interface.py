@@ -41,11 +41,34 @@ import datetime
 # from update import update 
 import resources.graphMath as gm
 import resources.displayElements as displayElements
-from resources.dataDefinitions import graphData, displayData
-from resources.indicatorDefinitions import indicatorData
-from resources.modeDefinitions import softwareModes, softwareSubstates, modeData
+import resources.dataDefinitions as dataDefs
+import resources.indicatorDefinitions as indicatorDefs
 import resources.softwareDefinitions as softwareDefs
 
+# ============================== #
+# === SELECT DATA TO DISPLAY === #
+# ============================== #
+
+graphData = [dataDefs.chamberPressure, 
+             dataDefs.N2O_BottlePressure,
+             dataDefs.linePressure,
+             dataDefs.heatingBlanketTemperature,
+             dataDefs.nozzleTemperature,
+             dataDefs.loadCell,
+             dataDefs.ambientTemperature,
+             dataDefs.plumeTemperature]
+
+displayData = [dataDefs.N2O_BottlePressure,
+               dataDefs.heatingBlanketTemperature,
+               dataDefs.loadCell]
+
+indicatorData = [indicatorDefs.ignitionRelayIndicator, 
+                 indicatorDefs.mainValveIndicator, 
+                 indicatorDefs.heatingBlanketIndicator]
+
+softwareData = [softwareDefs.mode, 
+                softwareDefs.states, 
+                softwareDefs.arduino]
 
 # ================= #
 # === VARIABLES === #
@@ -53,7 +76,7 @@ import resources.softwareDefinitions as softwareDefs
 
 nGraphs       = len(graphData)
 nDataDisplays = len(displayData)
-nTextDisplays = 3
+nTextDisplays = len(softwareData)
 nIndicators   = len(indicatorData)
 
 
@@ -79,7 +102,7 @@ indicatorPanel, streamPanel = infoPanel.subfigures(2, 1, height_ratios=[3,2])
 displayPanel, lightsPanel = indicatorPanel.subfigures(1,2)
 modePanel, logPanel = streamPanel.subfigures(1,2)
 
-# adjust background colors of the subfigures
+# adjust background colors of the panels
 dataPanel.set_facecolor('silver')
 lightsPanel.set_facecolor('slategrey') 
 displayPanel.set_facecolor('slategrey')
@@ -137,8 +160,6 @@ for i in range(4):
 # initialize lists for holding the line data
 x_data   = np.linspace(0, 1, nDataPoints) # common to all graphs
 y_data   = [[0] * nDataPoints for _ in range(nGraphs)]
-for i in range(len(y_data)):
-    print(id(y_data[i]))
 averages = [0] * nGraphs
 
 # initialize line data
@@ -164,7 +185,7 @@ for i in range(nIndicators):
     indicatorObjects.append(displayElements.indicatorLight(indicatorData[i]['title']))
     
 # remove plot background and set title and square aspect ratio of the subplots
-# add indicator artists
+# add indicator artists to the plots
 for i in range(nIndicators):
     indicators[i].set_aspect('equal', 'box')
     indicators[i].axis('off')
@@ -282,44 +303,19 @@ lastFilePosition = 0
 
 indicatorStates[0] = 1
 
-print(artists)
-
 def update(frame):
     global lastFilePosition
     global indicatorStates
     global displayValues
+    global dataFile
+    
+    msgIsUpdated = False
 
     # ------------------------------- #
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
 
-    # indices in csv file coming from serialReadyer.py and serialComms.cpp
-    # Total amount of columns : 21
-    # Chamber pressure : 5
-    # Bottle pressure : 3
-    # Line pressure : 4
-    # Bottle Temperature : 7
-    # Nozzle Temperature : 9
-    # Load Cell Force : 6
-    # Ambient Temperature : 10
-    # Plume Temperature : 11
-
-    # indicator flag indices 
-    # heating blanket : 13
-    # main valve : 16
-    # ignition relay : 14
-
-    # dataIndices = [5, 3, 4, 7, 9, 10, 11]
-    # indicatorIndices = [13, 16, 14]
-    # with open('data.csv', 'r', newline='') as dataFile:
-    #     dataFile.seek(lastFilePosition)
-    #     csvReader = csv.reader(dataFile)
-    #     for row in csvReader:
-    #         for i in range(nGraphs):
-    #             y_data[i].pop(0)
-    #             y_data[i].append(float(row[dataIndices[i]]))
-    #             indicatorStates[i] = float(row[indicatorIndices[i]])
-        # lastFilePosition = dataFile.tell()
+    '''
     fpath = 'dummyData.csv'
     with open(fpath, 'r', newline='') as dataFile:
         dataFile.seek(lastFilePosition, 0)
@@ -331,11 +327,22 @@ def update(frame):
                 y_data[i].pop(0)
                 #y_data[i].append(float(row[graphData[i]['csvIndex']]))
                 y_data[i].append(gm.lerp(y_data[i][-1], float(row[graphData[i]['csvIndex']]), weight))
+            if row[-1] != ' ':
+                msgIsUpdated = True
+                msg = row[-1]
 
         lastFilePosition = dataFile.tell()
-
-
-
+    '''
+    line = dataFile.readline().split(',')
+    weight = 0
+    for i in range(nGraphs):
+        # this trick is from here:
+        # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
+        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
+        msg = line[-1].strip('\n')
+        if msg != ' ':
+            msgIsUpdated = True
+    
     # ---------------------------- #
     # --- UPDATE DATA IN PLOTS --- #
     # ---------------------------- #
@@ -361,8 +368,6 @@ def update(frame):
     # update the indicator state
     for i in range(nIndicators):
         indicatorObjects[i].setState(indicatorStates[i])
-    
-
 
     # ----------------------------- #
     # --- UPDATE DISPLAY VALUES --- #
@@ -396,8 +401,10 @@ def update(frame):
     # ------------------ #
     # --- UPDATE LOG --- #
     # ------------------ #
-
-    logObject.updateLog('MSG')
+    
+    if msgIsUpdated == True:
+        logObject.updateLog(msg)
+    
 
     return artists
 
@@ -436,6 +443,10 @@ def on_close(event):
 interface.canvas.mpl_connect('key_press_event', escape)
 interface.canvas.mpl_connect('close_event', on_close)
 
+fpath = 'dummyData.csv'
+dataFile = open(fpath, 'r')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
 plt.show()
+
+dataFile.close()
