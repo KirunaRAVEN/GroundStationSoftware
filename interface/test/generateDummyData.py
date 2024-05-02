@@ -25,6 +25,14 @@ while True:
         csv_writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         for i in range(0, nData):
            row[i] = 50 * np.sin(elapsed_time) + 50 
+        if row[15] > 50:
+            row[14] = 1.0
+            row[15] = 1.0
+            row[17] = 1.0
+        else: 
+            row[14] = 0.0
+            row[15] = 0.0
+            row[17] = 0.0
         new_msg = ''
         for i in range(20):
             new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
