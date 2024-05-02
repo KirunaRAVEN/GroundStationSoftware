@@ -101,16 +101,3 @@ plumeTemperature = {
     'dangerValue' : 0,
     'csvIndex' : 12
 }
-
-graphData = [chamberPressure, 
-             N2O_BottlePressure,
-             linePressure,
-             heatingBlanketTemperature,
-             nozzleTemperature,
-             loadCell,
-             ambientTemperature,
-             plumeTemperature]
-
-displayData = [N2O_BottlePressure,
-               heatingBlanketTemperature,
-               loadCell]

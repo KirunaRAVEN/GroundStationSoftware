@@ -12,5 +12,3 @@ heatingBlanketIndicator = {
     'title': 'Heating Blanket',
     'csvIndex' : 14
 }
-
-indicatorData = [ignitionRelayIndicator, mainValveIndicator, heatingBlanketIndicator]

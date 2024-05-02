@@ -14,5 +14,3 @@ arduino = {
     'title' : 'Arduino Time',
     'csvIndex' : 2
 }
-
-softwareDefs = [mode, states, arduino]
