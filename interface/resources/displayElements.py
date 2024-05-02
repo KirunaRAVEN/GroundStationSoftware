@@ -41,7 +41,7 @@ class valueBox:
         # if self.value > 
 
 class textBox:
-    def __init__(self, title, titleFontSize=14, text='TEXT', textFontSize=24):
+    def __init__(self, title, titleFontSize=14, text='TEXT', textFontSize=14):
         self.titleFontSize  = titleFontSize
         self.textFontSize = textFontSize
         self.title = title

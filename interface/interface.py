@@ -70,10 +70,6 @@ softwareData = [softwareDefs.mode,
                 softwareDefs.states, 
                 softwareDefs.arduino]
 
-# ================= #
-# === VARIABLES === #
-# ================= #
-
 nGraphs       = len(graphData)
 nDataDisplays = len(displayData)
 nTextDisplays = len(softwareData)
@@ -307,10 +303,7 @@ def update(frame):
     global lastFilePosition
     global indicatorStates
     global displayValues
-    global dataFile
     
-    msgIsUpdated = False
-
     # ------------------------------- #
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
@@ -387,10 +380,17 @@ def update(frame):
     # -------------------------------- #
 
     text = []
+    text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
+    text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
+    ms = float(line[softwareData[2]['csvIndex']])
+    time = [float(t) for t in str(datetime.timedelta(milliseconds=ms)).split(':')]
+    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
+    text.append(str(time))
+    
     for i in range(nTextDisplays):
+        displayObjects[nDataDisplays + i].setText(text[i])
         # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
         # update text
-        displayObjects[nDataDisplays + i].setText('WIP')
 
     # ------------------ #
     # --- UPDATE LOG --- #
