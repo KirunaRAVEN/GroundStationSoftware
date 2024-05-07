@@ -45,6 +45,9 @@ import resources.dataDefinitions as dataDefs
 import resources.indicatorDefinitions as indicatorDefs
 import resources.softwareDefinitions as softwareDefs
 
+import subprocess
+subprocess.Popen(["python", "test/generateDummyData.py"])
+
 # ============================== #
 # === SELECT DATA TO DISPLAY === #
 # ============================== #
@@ -121,7 +124,7 @@ dataPanel.subplots_adjust(left=0.05, right=0.99, bottom=0.03, top=0.97, wspace=0
 # plotting parameters
 labelFontSize = 9
 tickFontSize  = 7
-nDataPoints   = 50 # the covered time span is then about nDataPoints * updateRate = 10000 ms = 10s
+nDataPoints   = 200 # the covered time span is then about nDataPoints * updateRate = 10000 ms = 10s
 dataLinewidth = 0.75
 warningLinewidth = 1
 
@@ -151,7 +154,7 @@ for i in range(4):
 dataLines = []
 for i in range(4):
     for j in range(2):
-        dataLines.append(graphs[i][j].plot([], [], 'o', markersize=0.5, linewidth=dataLinewidth)[0])
+        dataLines.append(graphs[i][j].plot([], [], markersize=0.5, linewidth=dataLinewidth)[0])
 
 # initialize lists for holding the line data
 x_data   = np.linspace(0, 1, nDataPoints) # common to all graphs
@@ -299,6 +302,30 @@ lastFilePosition = 0
 
 indicatorStates[0] = 1
 
+def decodeLine(line):
+    line = line.split(',')
+    
+    # convert types
+    for i in range(nGraphs):
+        line[graphData[i]['csvIndex']] = float(line[graphData[i]['csvIndex']])
+    
+    for i in range(nIndicators):
+        line[indicatorData[i]['csvIndex']] = int(float(line[indicatorData[i]['csvIndex']]))
+    
+    line[softwareData[0]['csvIndex']] = int(float(line[softwareData[0]['csvIndex']]))
+    line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
+    line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
+    
+    maxCharPerLine = 20
+    msg = line[-1].strip('\n')
+    if msg != ' ':
+        message_updated = True
+        line[-1] = [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
+    else :
+        message_updated = False      
+
+    return line, message_updated
+
 def update(frame):
     global lastFilePosition
     global indicatorStates
@@ -308,44 +335,33 @@ def update(frame):
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
     
-    line = dataFile.readline().split(',')
+    #line = dataFile.readline().split(',')
 
-    '''
-    fpath = 'dummyData.csv'
-    with open(fpath, 'r', newline='') as dataFile:
-        dataFile.seek(lastFilePosition, 0)
-        csvReader = csv.reader(dataFile)
-        
-        weight = 0
-        for row in csvReader:
-            for i in range(nGraphs):
-                y_data[i].pop(0)
-                #y_data[i].append(float(row[graphData[i]['csvIndex']]))
-                y_data[i].append(gm.lerp(y_data[i][-1], float(row[graphData[i]['csvIndex']]), weight))
-            if row[-1] != ' ':
-                msgIsUpdated = True
-                msg = row[-1]
-
-        lastFilePosition = dataFile.tell()
-    '''
+    # iterate to the end of the file
+    for line in dataFile:
+        pass
+    
+    line, message_updated = decodeLine(line)
 
     # ---------------------------- #
     # --- UPDATE DATA IN PLOTS --- #
     # ---------------------------- #
 
-    weight = 0
+    # append latest data and remove earliest. Latest data is linearly interpolated according to the weight
+    weight = 0.5
     for i in range(nGraphs):
         # this trick is from here:
         # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
-        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
+        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], line[graphData[i]['csvIndex']], weight)
         
-    # update the data and average lines and calculate averages
+    # update the data and average lines and calculate averages over the last datapoints
     for i in range(nGraphs):
-        averages[i] = gm.rollingAverage(y_data[i])
+        averages[i] = np.ma.average(y_data[i][-10:])
         artists[i].set_ydata(y_data[i])
     
+    # update the value indicator on the graphs
     for i in range(len(graphIndicators)):
-        graphIndicators[i].set_text('{:.1f} {:s}'.format(averages[i], graphData[i]['yUnit']))
+        graphIndicators[i].set_text('{:.1f} {:s}'.format(y_data[i][-1], graphData[i]['yUnit']))
 
     # ----------------------------------------- #
     # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
@@ -353,7 +369,7 @@ def update(frame):
 
     # get the indicator states and update the indicators
     for i in range(nIndicators):
-        indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
+        indicatorStates[i] = line[indicatorData[i]['csvIndex']]
         indicatorObjects[i].setState(indicatorStates[i])
 
     # ----------------------------- #
@@ -380,9 +396,9 @@ def update(frame):
     # -------------------------------- #
 
     text = []
-    text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
-    text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
-    ms = float(line[softwareData[2]['csvIndex']])
+    text.append(softwareData[0]['modes'][line[softwareData[0]['csvIndex']]])
+    text.append(softwareData[1]['states'][line[softwareData[1]['csvIndex']]])
+    ms = line[softwareData[2]['csvIndex']]
     time = [float(t) for t in str(datetime.timedelta(milliseconds=ms)).split(':')]
     time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
     text.append(str(time))
@@ -396,11 +412,13 @@ def update(frame):
     # --- UPDATE LOG --- #
     # ------------------ #
     
-    msg = line[-1].strip('\n')
-    if msg != ' ':
-        logObject.updateLog(msg)
+    if message_updated == True:
+        for msg in line[-1]:
+            logObject.updateLog(msg)
+            # update color for the tests
+            # 'passed' in green
+            # 'failed' in red
     
-
     return artists
 
 
@@ -411,7 +429,7 @@ plt.get_current_fig_manager().full_screen_toggle()
 # animation settings
 isUsingBlit = True
 isCachingFrameData = False
-updateRate = 16 # milli seconds: seems to be faster than data rate on average
+updateRate = 5 # milli seconds: seems to be faster than data rate on average
 
 
 

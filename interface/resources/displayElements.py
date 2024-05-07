@@ -38,7 +38,6 @@ class valueBox:
     def setValue(self, value):
         self.value = value
         self.display.set_text('%.1f %s' %(self.value, self.unit))
-        # if self.value > 
 
 class textBox:
     def __init__(self, title, titleFontSize=14, text='TEXT', textFontSize=14):
@@ -59,7 +58,7 @@ class logBox:
     def __init__(self):
         self.maxLines = 17
         self.log = ['msg1'] * self.maxLines 
-        self.display = Text(0.025, 1.575, self.log, wrap=False, horizontalalignment='left', verticalalignment='top')
+        self.display = Text(0.025, 1.575, self.log, wrap=False, horizontalalignment='left', verticalalignment='top', fontsize=5)
         self.outline = plt.Rectangle((0, 0), 1.0, 1.6, color='black')
         self.inner = plt.Rectangle((0.0125, 0.0125), 0.975, 1.575, color='white')
         self.objects = [self.outline, self.inner, self.display]

@@ -38,7 +38,7 @@ while True:
             row[17] = 0.0
 
         # adjust time value
-        row[2] *= 1000
+        row[2] = elapsed_time * 1000
 
         # adjust software columns
         if row[21] < 17:
@@ -62,7 +62,7 @@ while True:
 
         # message field
         new_msg = ''
-        for i in range(20):
+        for i in range(25):
             new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
         #if new_msg != old_msg:
         row[-1] = new_msg
