@@ -33,7 +33,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 import numpy as np
-import csv
 import shutil
 import datetime
 
@@ -75,7 +74,7 @@ softwareData = [softwareDefs.mode,
 
 nGraphs       = len(graphData)
 nDataDisplays = len(displayData)
-nTextDisplays = len(softwareData)
+nSoftwareDisplays = len(softwareData)
 nIndicators   = len(indicatorData)
 
 
@@ -89,7 +88,7 @@ nIndicators   = len(indicatorData)
 # ------------------------ #
 
 # select backend and remove toolbar
-mpl.use("qtagg")
+mpl.use("Tkagg")
 mpl.style.use('fast')
 plt.rcParams['toolbar'] = 'None'
 
@@ -225,20 +224,6 @@ for i in range(nDataDisplays):
 # --- ADD SOFTWARE STATE DISPLAYS --- #
 # ----------------------------------- #
 
-# nModeDisplays = len(modeData)
-# modeDisplays = modePanel.subplots(nModeDisplays)
-
-# for i in range(nModeDisplays):
-#     displayObjects.append(displayElements.textBox(title=modeData[i], text='TBD'))
-#     modeDisplays[i].axis('off')
-#     modeDisplays[i].set_ylim(0, 1.0)
-#     modeDisplays[i].set_xlim(0, 2.5)
-#     modeDisplays[i].set_aspect(aspect='equal')
-#     modeDisplays[i].set_title(displayObjects[nDataDisplays + i].title, fontsize=displayObjects[nDataDisplays + i].titleFontSize)
-#     for j in range(len(displayObjects[nDataDisplays + i].objects)):
-#         modeDisplays[i].add_artist(displayObjects[nDataDisplays + i].objects[j])
-
-nSoftwareDisplays = 3
 softwareDisplays = modePanel.subplots(nSoftwareDisplays)
 
 displayObjects.append(displayElements.textBox(title=softwareDefs.mode['title'], text='TBD'))
@@ -285,7 +270,7 @@ for i in range(nIndicators):
     indicatorArtists += indicatorObjects[i].objects # nIndicator*5 elements
 
 displayArtists = []
-for i in range(nDataDisplays + nTextDisplays):
+for i in range(nDataDisplays + nSoftwareDisplays):
     displayArtists += displayObjects[i].objects # nDataDisplays*2 elements
 
 modeArtists = []
@@ -296,15 +281,31 @@ nGraphArtists     = len(graphArtists)
 nIndicatorArtists = len(indicatorArtists)
 nDisplayArtists   = len(displayArtists)
 
-artists = graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
-
 lastFilePosition = 0
 
 indicatorStates[0] = 1
 
+#'''
+def getLatestLine():
+    # iterate to the end of the file
+    for line in dataFile:
+        pass
+    return line.decode()
+#'''
+
+'''
+def getLatestLine():
+    global lastFilePosition
+    lineLengthEstimate = 350
+    dataFile.seek(lastFilePosition) # this requires binary mode
+    line = dataFile.readline().decode()
+    lastFilePosition = dataFile.tell()
+    return line
+#'''
+
 def decodeLine(line):
     line = line.split(',')
-    
+    #print(line)
     # convert types
     for i in range(nGraphs):
         line[graphData[i]['csvIndex']] = float(line[graphData[i]['csvIndex']])
@@ -316,8 +317,8 @@ def decodeLine(line):
     line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
     line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
     
-    maxCharPerLine = 20
-    msg = line[-1].strip('\n')
+    maxCharPerLine = 25
+    msg = line[-1].strip('\r\n') # remove trailing special characters
     if msg != ' ':
         message_updated = True
         line[-1] = [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
@@ -337,10 +338,8 @@ def update(frame):
     
     #line = dataFile.readline().split(',')
 
-    # iterate to the end of the file
-    for line in dataFile:
-        pass
-    
+    # get last line from the data stream
+    line = getLatestLine()  
     line, message_updated = decodeLine(line)
 
     # ---------------------------- #
@@ -357,15 +356,15 @@ def update(frame):
     # update the data and average lines and calculate averages over the last datapoints
     for i in range(nGraphs):
         averages[i] = np.ma.average(y_data[i][-10:])
-        artists[i].set_ydata(y_data[i])
+        graphArtists[i].set_ydata(y_data[i])
     
     # update the value indicator on the graphs
     for i in range(len(graphIndicators)):
         graphIndicators[i].set_text('{:.1f} {:s}'.format(y_data[i][-1], graphData[i]['yUnit']))
 
-    # ----------------------------------------- #
-    # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
-    # ----------------------------------------- #
+    # ----------------------------------- #
+    # --- UPDATE THE INDICATOR LIGHTS --- #
+    # ----------------------------------- #
 
     # get the indicator states and update the indicators
     for i in range(nIndicators):
@@ -403,7 +402,7 @@ def update(frame):
     time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
     text.append(str(time))
     
-    for i in range(nTextDisplays):
+    for i in range(nSoftwareDisplays):
         displayObjects[nDataDisplays + i].setText(text[i])
         # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
         # update text
@@ -415,11 +414,12 @@ def update(frame):
     if message_updated == True:
         for msg in line[-1]:
             logObject.updateLog(msg)
-            # update color for the tests
+            # not sure this is possible:
+            # update color for the tests' statuses
             # 'passed' in green
             # 'failed' in red
     
-    return artists
+    return graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
 
 
 
@@ -429,9 +429,11 @@ plt.get_current_fig_manager().full_screen_toggle()
 # animation settings
 isUsingBlit = True
 isCachingFrameData = False
-updateRate = 5 # milli seconds: seems to be faster than data rate on average
+updateRate = 0 # milli seconds: seems to be faster than data rate on average
 
-
+# ============================ #
+# === KEY PRESSES HANDLING === #
+# ============================ #
 
 # function to add escape key press to exit figure
 def escape(esc):
@@ -456,8 +458,12 @@ def on_close(event):
 interface.canvas.mpl_connect('key_press_event', escape)
 interface.canvas.mpl_connect('close_event', on_close)
 
+# ============================= #
+# === ANIMATION GO BRRRRRRR === #
+# ============================= #
+
 fpath = 'dummyData.csv'
-dataFile = open(fpath, 'r')
+dataFile = open(fpath, 'rb')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
 plt.show()
