@@ -21,7 +21,7 @@ elapsed_time = 0
 time_increment = 0.01
 while True:
     with open('dummyData.csv', 'a', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        #csv_writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         
         # all columns
         for i in range(0, nData):
@@ -30,6 +30,7 @@ while True:
         # adjust indicator columns
         if row[15] > 50:
             row[14] = 1.0
+            
             row[15] = 1.0
             row[17] = 1.0
         else: 
@@ -66,6 +67,15 @@ while True:
             new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
         #if new_msg != old_msg:
         row[-1] = new_msg
-        csv_writer.writerow(row)
+        print(row[2])
+        line=''
+        for el in row:
+        	line += f'{el},'
+        line = line[:-1]
+        line += '\n'
+        print(line)
+        csv_file.write(line)
+        csv_file.flush()
+        #csv_writer.writerow(row)
         time.sleep(time_increment)
         elapsed_time = elapsed_time + time_increment

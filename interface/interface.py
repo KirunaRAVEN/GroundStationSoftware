@@ -44,8 +44,8 @@ import resources.dataDefinitions as dataDefs
 import resources.indicatorDefinitions as indicatorDefs
 import resources.softwareDefinitions as softwareDefs
 
-import subprocess
-subprocess.Popen(["python", "test/generateDummyData.py"])
+#import subprocess
+#subprocess.Popen(["python3", "test/generateDummyData.py"])
 
 # ============================== #
 # === SELECT DATA TO DISPLAY === #
@@ -281,6 +281,8 @@ nGraphArtists     = len(graphArtists)
 nIndicatorArtists = len(indicatorArtists)
 nDisplayArtists   = len(displayArtists)
 
+artists = graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
+
 lastFilePosition = 0
 
 indicatorStates[0] = 1
@@ -288,9 +290,12 @@ indicatorStates[0] = 1
 #'''
 def getLatestLine():
     # iterate to the end of the file
-    for line in dataFile:
-        pass
-    return line.decode()
+    for line in dataFile: 
+    	print('hello')
+		pass
+    
+    if not line: line = []
+    return line #.decode('utf-8')
 #'''
 
 '''
@@ -305,6 +310,7 @@ def getLatestLine():
 
 def decodeLine(line):
     line = line.split(',')
+    print(line)
     #print(line)
     # convert types
     for i in range(nGraphs):
@@ -339,7 +345,8 @@ def update(frame):
     #line = dataFile.readline().split(',')
 
     # get last line from the data stream
-    line = getLatestLine()  
+   	line = getLatestLine()  
+    print(line)
     line, message_updated = decodeLine(line)
 
     # ---------------------------- #
@@ -429,7 +436,7 @@ plt.get_current_fig_manager().full_screen_toggle()
 # animation settings
 isUsingBlit = True
 isCachingFrameData = False
-updateRate = 0 # milli seconds: seems to be faster than data rate on average
+updateRate = 10 # milli seconds: seems to be faster than data rate on average
 
 # ============================ #
 # === KEY PRESSES HANDLING === #
@@ -463,7 +470,8 @@ interface.canvas.mpl_connect('close_event', on_close)
 # ============================= #
 
 fpath = 'dummyData.csv'
-dataFile = open(fpath, 'rb')
+fpath = 'data.csv'
+dataFile = open(fpath, 'r')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
 plt.show()
