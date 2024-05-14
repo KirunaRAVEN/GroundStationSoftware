@@ -324,11 +324,14 @@ def decodeLine(line, last_line):
         line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
         line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
         
-        maxCharPerLine = 25
+        maxCharPerLine = 35
         msg = line[-1].strip('\r\n') # remove trailing special characters
         if msg != ' ':
             message_updated = True
-            line[-1] = [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
+            msg_list = msg.split('\\n')
+            line[-1] = []
+            for msg in msg_list:
+                line[-1] += [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
         else :
             message_updated = False      
 
@@ -351,6 +354,7 @@ def update(frame):
 
     # get last line from the data stream
     lines, lastFilePosition = getLatestLines(lastFilePosition) 
+
     for line in lines:
         line, message_updated = decodeLine(line, last_line)
         last_line = line
@@ -433,7 +437,7 @@ def update(frame):
                     # update color for the tests' statuses
                     # 'passed' in green
                     # 'failed' in red
-            
+                
     return graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
 
 
@@ -464,7 +468,7 @@ def on_close(event):
         Save a copy of the data file to archive and with timestamp
     """
     time = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%M') 
-    src = 'data.csv'
+    src = fpath
     dst = 'archive/'
     dst = dst + 'data_' + time + '.csv'
     shutil.copy2(src, dst)
@@ -477,10 +481,11 @@ interface.canvas.mpl_connect('close_event', on_close)
 # === ANIMATION GO BRRRRRRR === #
 # ============================= #
 
-fpath = 'dummyData.csv'
-#fpath = 'data.csv'
+#fpath = 'dummyData.csv'
+fpath = '../../ROCK_SOFTWARE/data.csv'
 dataFile = open(fpath, 'r')
 # animate the interface
+print('Launching the animation...')
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
 plt.show()
 
