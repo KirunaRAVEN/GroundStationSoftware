@@ -34,6 +34,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 import numpy as np
 import shutil
+import ctypes 
 import datetime
 
 # internal (functions)
@@ -46,6 +47,7 @@ import resources.softwareDefinitions as softwareDefs
 
 #import subprocess
 #subprocess.Popen(["python3", "test/generateDummyData.py"])
+
 
 # ============================== #
 # === SELECT DATA TO DISPLAY === #
@@ -88,6 +90,9 @@ nIndicators   = len(indicatorData)
 # ------------------------ #
 
 # select backend and remove toolbar
+import platform
+if platform.system() == 'Windows':
+    ctypes.windll.shcore.SetProcessDpiAwareness(0) # make screen scaling aware else Tkagg screws up
 mpl.use("Tkagg")
 mpl.style.use('fast')
 plt.rcParams['toolbar'] = 'None'
@@ -287,57 +292,57 @@ lastFilePosition = 0
 
 indicatorStates[0] = 1
 
-#'''
+'''
 def getLatestLine():
     # iterate to the end of the file
+    line = 'hello'
     for line in dataFile: 
-    	print('hello')
-		pass
-    
-    if not line: line = []
+        pass
     return line #.decode('utf-8')
 #'''
 
-'''
-def getLatestLine():
-    global lastFilePosition
-    lineLengthEstimate = 350
-    dataFile.seek(lastFilePosition) # this requires binary mode
-    line = dataFile.readline().decode()
+#'''
+def getLatestLines(lastFilePosition):
+    dataFile.seek(lastFilePosition) 
+    lines = dataFile.readlines()
     lastFilePosition = dataFile.tell()
-    return line
+    return lines, lastFilePosition
 #'''
 
-def decodeLine(line):
+def decodeLine(line, last_line):
     line = line.split(',')
-    print(line)
-    #print(line)
+
     # convert types
-    for i in range(nGraphs):
-        line[graphData[i]['csvIndex']] = float(line[graphData[i]['csvIndex']])
-    
-    for i in range(nIndicators):
-        line[indicatorData[i]['csvIndex']] = int(float(line[indicatorData[i]['csvIndex']]))
-    
-    line[softwareData[0]['csvIndex']] = int(float(line[softwareData[0]['csvIndex']]))
-    line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
-    line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
-    
-    maxCharPerLine = 25
-    msg = line[-1].strip('\r\n') # remove trailing special characters
-    if msg != ' ':
-        message_updated = True
-        line[-1] = [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
-    else :
-        message_updated = False      
+    if len(line) == 23:
+        for i in range(nGraphs):
+            line[graphData[i]['csvIndex']] = float(line[graphData[i]['csvIndex']])
+        
+        for i in range(nIndicators):
+            line[indicatorData[i]['csvIndex']] = int(float(line[indicatorData[i]['csvIndex']]))
+        
+        line[softwareData[0]['csvIndex']] = int(float(line[softwareData[0]['csvIndex']]))
+        line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
+        line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
+        
+        maxCharPerLine = 25
+        msg = line[-1].strip('\r\n') # remove trailing special characters
+        if msg != ' ':
+            message_updated = True
+            line[-1] = [msg[i:i+maxCharPerLine] for i in range(0, len(msg), maxCharPerLine)]  
+        else :
+            message_updated = False      
 
-    return line, message_updated
+        return line, message_updated
+    else:
+        return last_line, False
 
+last_line = ''
+lastFilePosition = 0
 def update(frame):
     global lastFilePosition
     global indicatorStates
     global displayValues
-    
+    global last_line
     # ------------------------------- #
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
@@ -345,87 +350,90 @@ def update(frame):
     #line = dataFile.readline().split(',')
 
     # get last line from the data stream
-   	line = getLatestLine()  
-    print(line)
-    line, message_updated = decodeLine(line)
+    lines, lastFilePosition = getLatestLines(lastFilePosition) 
+    for line in lines:
+        line, message_updated = decodeLine(line, last_line)
+        last_line = line
+        if len(line) == 23:
 
-    # ---------------------------- #
-    # --- UPDATE DATA IN PLOTS --- #
-    # ---------------------------- #
+            # ---------------------------- #
+            # --- UPDATE DATA IN PLOTS --- #
+            # ---------------------------- #
 
-    # append latest data and remove earliest. Latest data is linearly interpolated according to the weight
-    weight = 0.5
-    for i in range(nGraphs):
-        # this trick is from here:
-        # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
-        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], line[graphData[i]['csvIndex']], weight)
-        
-    # update the data and average lines and calculate averages over the last datapoints
-    for i in range(nGraphs):
-        averages[i] = np.ma.average(y_data[i][-10:])
-        graphArtists[i].set_ydata(y_data[i])
-    
-    # update the value indicator on the graphs
-    for i in range(len(graphIndicators)):
-        graphIndicators[i].set_text('{:.1f} {:s}'.format(y_data[i][-1], graphData[i]['yUnit']))
+            # append latest data and remove earliest. Latest data is linearly interpolated according to the weight
+            weight = 0.5
+            for i in range(nGraphs):
+                # this trick is from here:
+                # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
+                y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], line[graphData[i]['csvIndex']], weight)
+                
+            # update the data and average lines and calculate averages over the last datapoints
+            for i in range(nGraphs):
+                averages[i] = np.ma.average(y_data[i][-10:])
+                graphArtists[i].set_xdata(x_data) # update time here
+                graphArtists[i].set_ydata(y_data[i])
+            
+            # update the value indicator on the graphs
+            for i in range(len(graphIndicators)):
+                graphIndicators[i].set_text('{:.1f} {:s}'.format(y_data[i][-1], graphData[i]['yUnit']))
 
-    # ----------------------------------- #
-    # --- UPDATE THE INDICATOR LIGHTS --- #
-    # ----------------------------------- #
+            # ----------------------------------- #
+            # --- UPDATE THE INDICATOR LIGHTS --- #
+            # ----------------------------------- #
 
-    # get the indicator states and update the indicators
-    for i in range(nIndicators):
-        indicatorStates[i] = line[indicatorData[i]['csvIndex']]
-        indicatorObjects[i].setState(indicatorStates[i])
+            # get the indicator states and update the indicators
+            for i in range(nIndicators):
+                indicatorStates[i] = line[indicatorData[i]['csvIndex']]
+                indicatorObjects[i].setState(indicatorStates[i])
 
-    # ----------------------------- #
-    # --- UPDATE DISPLAY VALUES --- #
-    # ----------------------------- #
-    
-    for i in range(nDataDisplays):
-        displayValues[i] = averages[i] # change this once new indexing going on
-        displayObjects[i].setValue(displayValues[i])
-        
-        artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
-    
-        # update color
-        displayObjects[i].value = averages[i]
-        if averages[i] >= displayData[i]['dangerValue']:
-            artists[artistIndex].set_color('red') 
-        elif averages[i] >= displayData[i]['warningValue']:
-            artists[artistIndex].set_color('darkorange')  
-        else :
-            artists[artistIndex].set_color('green')
+            # ----------------------------- #
+            # --- UPDATE DISPLAY VALUES --- #
+            # ----------------------------- #
+            
+            for i in range(nDataDisplays):
+                displayValues[i] = averages[i] # change this once new indexing going on
+                displayObjects[i].setValue(displayValues[i])
+                
+                artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
+            
+                # update color
+                displayObjects[i].value = averages[i]
+                if averages[i] >= displayData[i]['dangerValue']:
+                    artists[artistIndex].set_color('red') 
+                elif averages[i] >= displayData[i]['warningValue']:
+                    artists[artistIndex].set_color('darkorange')  
+                else :
+                    artists[artistIndex].set_color('green')
 
-    # -------------------------------- #
-    # --- UPDATE SOFTWARE DISPLAYS --- #
-    # -------------------------------- #
+            # -------------------------------- #
+            # --- UPDATE SOFTWARE DISPLAYS --- #
+            # -------------------------------- #
 
-    text = []
-    text.append(softwareData[0]['modes'][line[softwareData[0]['csvIndex']]])
-    text.append(softwareData[1]['states'][line[softwareData[1]['csvIndex']]])
-    ms = line[softwareData[2]['csvIndex']]
-    time = [float(t) for t in str(datetime.timedelta(milliseconds=ms)).split(':')]
-    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
-    text.append(str(time))
-    
-    for i in range(nSoftwareDisplays):
-        displayObjects[nDataDisplays + i].setText(text[i])
-        # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
-        # update text
+            text = []
+            text.append(softwareData[0]['modes'][line[softwareData[0]['csvIndex']]])
+            text.append(softwareData[1]['states'][line[softwareData[1]['csvIndex']]])
+            ms = line[softwareData[2]['csvIndex']]
+            time = [float(t) for t in str(datetime.timedelta(milliseconds=ms)).split(':')]
+            time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
+            text.append(str(time))
+            
+            for i in range(nSoftwareDisplays):
+                displayObjects[nDataDisplays + i].setText(text[i])
+                # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
+                # update text
 
-    # ------------------ #
-    # --- UPDATE LOG --- #
-    # ------------------ #
-    
-    if message_updated == True:
-        for msg in line[-1]:
-            logObject.updateLog(msg)
-            # not sure this is possible:
-            # update color for the tests' statuses
-            # 'passed' in green
-            # 'failed' in red
-    
+            # ------------------ #
+            # --- UPDATE LOG --- #
+            # ------------------ #
+            
+            if message_updated == True:
+                for msg in line[-1]:
+                    logObject.updateLog(msg)
+                    # not sure this is possible:
+                    # update color for the tests' statuses
+                    # 'passed' in green
+                    # 'failed' in red
+            
     return graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
 
 
@@ -436,7 +444,7 @@ plt.get_current_fig_manager().full_screen_toggle()
 # animation settings
 isUsingBlit = True
 isCachingFrameData = False
-updateRate = 10 # milli seconds: seems to be faster than data rate on average
+updateRate = 0 # milli seconds: seems to be faster than data rate on average
 
 # ============================ #
 # === KEY PRESSES HANDLING === #
@@ -470,7 +478,7 @@ interface.canvas.mpl_connect('close_event', on_close)
 # ============================= #
 
 fpath = 'dummyData.csv'
-fpath = 'data.csv'
+#fpath = 'data.csv'
 dataFile = open(fpath, 'r')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)

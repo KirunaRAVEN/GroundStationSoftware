@@ -67,13 +67,11 @@ while True:
             new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
         #if new_msg != old_msg:
         row[-1] = new_msg
-        print(row[2])
         line=''
         for el in row:
         	line += f'{el},'
         line = line[:-1]
         line += '\n'
-        print(line)
         csv_file.write(line)
         csv_file.flush()
         #csv_writer.writerow(row)
