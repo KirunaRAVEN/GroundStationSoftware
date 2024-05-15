@@ -101,17 +101,17 @@ plt.rcParams['toolbar'] = 'None'
 # create interface figure and separate panels for the graphs, displays and indicators
 interface = plt.figure(facecolor='silver') 
 dataPanel, infoPanel = interface.subfigures(1, 2, width_ratios=[3,1]) 
-indicatorPanel, streamPanel = infoPanel.subfigures(2, 1, height_ratios=[3,2])
+indicatorPanel, streamPanel = infoPanel.subfigures(2, 1, height_ratios=[2.5,2])
 displayPanel, lightsPanel = indicatorPanel.subfigures(1,2)
-modePanel, logPanel = streamPanel.subfigures(1,2)
+modePanel, logPanel = streamPanel.subfigures(2,1, height_ratios=[1,3])
 
 # adjust background colors of the panels
 dataPanel.set_facecolor('silver')
 lightsPanel.set_facecolor('slategrey') 
 displayPanel.set_facecolor('slategrey')
 streamPanel.set_facecolor('slategrey')
-modePanel.set_facecolor('slategrey')
-logPanel.set_facecolor('slategrey')
+modePanel.set_facecolor('orange')
+logPanel.set_facecolor('red')
 
 
 
@@ -229,8 +229,8 @@ for i in range(nDataDisplays):
 # --- ADD SOFTWARE STATE DISPLAYS --- #
 # ----------------------------------- #
 
-softwareDisplays = modePanel.subplots(nSoftwareDisplays)
-
+softwareDisplays = modePanel.subplots(1, nSoftwareDisplays)
+modePanel.subplots_adjust(left=0.02, right=0.98, bottom=-0.05, top=0.97, wspace=0.04)
 displayObjects.append(displayElements.textBox(title=softwareDefs.mode['title'], text='TBD'))
 displayObjects.append(displayElements.textBox(title=softwareDefs.states['title'], text='TBD'))
 displayObjects.append(displayElements.textBox(title='Arduino Time', text='TBD'))
@@ -238,7 +238,7 @@ displayObjects.append(displayElements.textBox(title='Arduino Time', text='TBD'))
 for i in range(nSoftwareDisplays):
     softwareDisplays[i].axis('off')
     softwareDisplays[i].set_ylim(0, 1.0)
-    softwareDisplays[i].set_xlim(0, 2.5)
+    softwareDisplays[i].set_xlim(0, 3.5)
     softwareDisplays[i].set_aspect(aspect='equal')
     softwareDisplays[i].set_title(displayObjects[nDataDisplays + i].title, fontsize=displayObjects[nDataDisplays + i].titleFontSize)
 
@@ -250,9 +250,11 @@ for i in range(nSoftwareDisplays):
 # ----------------------- #
 
 logDisplay = logPanel.subplots(1)
+logPanel.subplots_adjust(left=0.04, right=0.98, bottom=-0.05, top=0.97)
 logDisplay.axis('off')
 logDisplay.set_aspect(aspect='equal')
-logDisplay.set_ylim(0, 1.6)
+logDisplay.set_ylim(0, 3.4)
+logDisplay.set_xlim(0, 4.8)
 logDisplay.set_title('Log messages', fontsize=14)
 
 logObject = displayElements.logBox()
@@ -324,7 +326,7 @@ def decodeLine(line, last_line):
         line[softwareData[1]['csvIndex']] = int(float(line[softwareData[1]['csvIndex']]))
         line[softwareData[2]['csvIndex']] = float(line[softwareData[2]['csvIndex']])
         
-        maxCharPerLine = 35
+        maxCharPerLine = 45
         msg = line[-1].strip('\r\n') # remove trailing special characters
         if msg != ' ':
             message_updated = True
@@ -481,8 +483,8 @@ interface.canvas.mpl_connect('close_event', on_close)
 # === ANIMATION GO BRRRRRRR === #
 # ============================= #
 
-#fpath = 'dummyData.csv'
-fpath = '../../ROCK_SOFTWARE/data.csv'
+fpath = 'dummyData.csv'
+#fpath = '../../ROCK_SOFTWARE/data.csv'
 dataFile = open(fpath, 'r')
 # animate the interface
 print('Launching the animation...')

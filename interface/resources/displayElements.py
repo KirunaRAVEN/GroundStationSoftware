@@ -40,14 +40,14 @@ class valueBox:
         self.display.set_text('%.1f %s' %(self.value, self.unit))
 
 class textBox:
-    def __init__(self, title, titleFontSize=14, text='TEXT', textFontSize=14):
+    def __init__(self, title, titleFontSize=12, text='TEXT', textFontSize=12):
         self.titleFontSize  = titleFontSize
         self.textFontSize = textFontSize
         self.title = title
         self.text = text
-        self.display = Text(1.25, 0.5, self.text, horizontalalignment='center', verticalalignment='center', fontsize=self.textFontSize, weight='bold')
-        self.outline = plt.Rectangle((0, 0), 2.5, 1.0, color='black')
-        self.inner = plt.Rectangle((0.025, 0.025), 2.45, 0.95, color='white')
+        self.display = Text(1.75, 0.5, self.text, horizontalalignment='center', verticalalignment='center', fontsize=self.textFontSize, weight='bold')
+        self.outline = plt.Rectangle((0, 0), 3.5, 1.0, color='black')
+        self.inner = plt.Rectangle((0.025, 0.025), 3.45, 0.95, color='white')
         self.objects = [self.outline, self.inner, self.display]
     
     def setText(self, text):
@@ -56,11 +56,11 @@ class textBox:
 
 class logBox:
     def __init__(self):
-        self.maxLines = 20
+        self.maxLines = 16
         self.log = [''] * self.maxLines 
-        self.display = Text(0.025, 1.575, '', wrap=False, horizontalalignment='left', verticalalignment='top', fontsize=9)
-        self.outline = plt.Rectangle((0, 0), 1.0, 1.6, color='black')
-        self.inner  = plt.Rectangle((0.0125, 0.0125), 0.975, 1.575, color='white')
+        self.display = Text(0.025, 3.375, '', wrap=False, horizontalalignment='left', verticalalignment='top', fontsize=9)
+        self.outline = plt.Rectangle((0, 0), 4.8, 3.4, color='black')
+        self.inner  = plt.Rectangle((0.025, 0.025), 4.75, 3.35, color='white')
         self.objects = [self.outline, self.inner, self.display]
     
     def updateLog(self, msg):

@@ -28,15 +28,14 @@ while True:
            row[i] = 50 * np.sin(elapsed_time) + 50 
         
         # adjust indicator columns
-        if row[15] > 50:
+        if row[14] > 50:
             row[14] = 1.0
-            
-            row[15] = 1.0
-            row[17] = 1.0
+            row[18] = 1.0
+            row[19] = 1.0
         else: 
             row[14] = 0.0
-            row[15] = 0.0
-            row[17] = 0.0
+            row[18] = 0.0
+            row[19] = 0.0
 
         # adjust time value
         row[2] = elapsed_time * 1000
@@ -63,7 +62,7 @@ while True:
 
         # message field
         new_msg = ''
-        for i in range(25):
+        for i in range(45):
             new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
         #if new_msg != old_msg:
         row[-1] = new_msg
