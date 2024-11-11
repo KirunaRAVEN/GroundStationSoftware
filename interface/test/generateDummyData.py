@@ -14,8 +14,9 @@ import numpy as np
 open('dummyData.csv', 'w')
 
 # list for the row elements
-nData = 23
-row = [0] * nData
+nData = 21
+nExtraData = 6
+row = [0] * (nData + nExtraData)
 
 elapsed_time = 0 
 time_increment = 0.01
@@ -24,7 +25,7 @@ while True:
         csv_writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         
         # all columns
-        for i in range(0, nData):
+        for i in range(0, nData + nExtraData):
            row[i] = 50 * np.sin(elapsed_time) + 50 
         
         # adjust indicator columns
@@ -61,10 +62,7 @@ while True:
             row[21] = 5.0
 
         # message field
-        new_msg = ''
-        for i in range(20):
-            new_msg += 'a' # f'elapsed time: {elapsed_time:.1f}'
-        #if new_msg != old_msg:
+        new_msg = random.randrange(34)
         row[-1] = new_msg
         csv_writer.writerow(row)
         time.sleep(time_increment)

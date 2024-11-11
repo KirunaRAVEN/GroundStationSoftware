@@ -56,7 +56,7 @@ graphData = [dataDefs.chamberPressure,
              dataDefs.nozzleTemperature,
              dataDefs.loadCell,
              dataDefs.ambientTemperature,
-             dataDefs.plumeTemperature]
+             dataDefs.testyData]
 
 displayData = [dataDefs.N2O_BottlePressure,
                dataDefs.heatingBlanketTemperature,
@@ -75,7 +75,44 @@ nDataDisplays = len(displayData)
 nTextDisplays = len(softwareData)
 nIndicators   = len(indicatorData)
 
+# ======================= #
+# === Messages        === #
+# ======================= #
 
+messageStrings = [  "",  
+                    "Running testing sequence\nTesting all OFF-states...\nRelease all buttons!\n",
+                    "No button presses detected\n",
+                    "Please release the oxidizer valve button.\n",
+                    "Please release the ignition button.\n",
+                    "Please release the heating blanket button.\n",
+                    ">>>  PASSED  <<<\n",
+                    ">>>  FAILED  <<<\n",
+                    "Ignition 24V relay OFF-state:\n",
+                    "Ignition GND relay OFF-state:\n",
+                    "Ignition SW relay OFF-state:\n",
+                    "Heating relay OFF-state:\n",
+                    "Oxidizer Valve OFF-state:\n",
+                    "Testing heating relay ON-state...\nPress the Heating button!\n",
+                    "Heating button press detected\n",
+                    "Heating relay ON-state:\n",
+                    "Release the Heating button\n",
+                    "Testing Oxidizer Valve ON-state...\nPress the Oxidizer Valve button!\n",
+                    "Oxidizer Valve button press detected\n",
+                    "Oxidizer Valve ON-state:\n",
+                    "Release the Oxidizer Valve button\n",
+                    "Testing ignition relays ON-state...\nPress the Ignition button!\n",
+                    "Ignition button press detected\n",
+                    "Ignition Power relay ON-state:\n",
+                    "Ignition Ground relay ON-state:\n",
+                    "Ignition Software relay ON-state:\n",
+                    "Release the Ignition button\n",
+                    "Actuator testing completed...\nVerification status:\n",
+                    "All tests passed!\nStarting up software...\n",
+                    "Fault detected!\nFind and fix the issue!\n",
+                    "Starting SW in 10 seconds\n",
+                    "Warning:\nCannot begin sequence\nwith dump valve open.\n",
+                    "Warning:\nCannot begin sequence\nwith N2 feeding valve open.\n",
+                    "Warning:\nCannot begin sequence\nwith Oxidizer valve open.\n"]
 
 # ======================= #
 # === INTERFACE SETUP === #
@@ -396,7 +433,10 @@ def update(frame):
     # --- UPDATE LOG --- #
     # ------------------ #
     
-    msg = line[-1].strip('\n')
+    msgIndex = line[-1].strip('\n')
+    print(msgIndex)
+    msg = messageStrings[int(msgIndex)]
+
     if msg != ' ':
         logObject.updateLog(msg)
     

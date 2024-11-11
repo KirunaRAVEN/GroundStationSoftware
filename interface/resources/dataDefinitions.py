@@ -1,3 +1,11 @@
+# TODO: add plot index, so multiple data can be displayed in the same plot. E.g. 2 blanket temps
+#
+# csvIndex 26 is the last data index, contains message.
+# indices 20, 21, 22, 23, 24, 25 contain values from second arduino. 20 being time, the rest being A0-A4 inputs.
+#
+# TODO: write index guide for arduino mega sensors
+#
+
 chamberPressure = {
     'title': 'Chamber Pressure',
     'xLabel': 'Time',
@@ -89,8 +97,8 @@ ambientTemperature = {
     'csvIndex' : 11
 }
 
-plumeTemperature = {
-    'title': 'Plume Temperature',
+testyData = {
+    'title': 'Testy Data',
     'xLabel': 'Time',
     'yLabel': 'Temperature', 
     'xUnit': 's', 
@@ -99,5 +107,5 @@ plumeTemperature = {
     'yUpperBound': 1030,
     'warningValue': 0,
     'dangerValue' : 0,
-    'csvIndex' : 12
+    'csvIndex' : 25
 }
