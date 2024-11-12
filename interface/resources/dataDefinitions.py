@@ -1,35 +1,68 @@
 # TODO: add plot index, so multiple data can be displayed in the same plot. E.g. 2 blanket temps
-#
-# csvIndex 26 is the last data index, contains message.
-# indices 20, 21, 22, 23, 24, 25 contain values from second arduino. 20 being time, the rest being A0-A4 inputs.
-#
-# TODO: write index guide for arduino mega sensors
-#
 
-chamberPressure = {
-    'title': 'Chamber Pressure',
+oxidizerPressure1 = {
+    'title': 'Ox. Bottle 1 Pressure',
     'xLabel': 'Time',
     'yLabel': 'Pressure', 
     'xUnit': 's', 
     'yUnit': 'Bar', 
     'yLowerBound': 0,
-    'yUpperBound': 172,
+    'yUpperBound': 80,
     'warningValue': 40,
-    'dangerValue' : 80,
-    'csvIndex' : 5
+    'dangerValue' : 60,
+    'csvIndex' : 4
 }
 
-N2O_BottlePressure = {
-    'title': 'N$_2$O Bottle Pressure',
+oxidizerPressure2 = {
+    'title': 'Ox. Bottle 2 Pressure',
     'xLabel': 'Time',
     'yLabel': 'Pressure', 
     'xUnit': 's', 
     'yUnit': 'Bar', 
     'yLowerBound': 0,
-    'yUpperBound': 100,
-    'warningValue': 65,
-    'dangerValue' : 85,
+    'yUpperBound': 80,
+    'warningValue': 40,
+    'dangerValue' : 60,
+    'csvIndex' : 1
+}
+
+oxidizerBottleTemperature1 = {
+    'title': 'Ox. Bottle 1 Temperature',
+    'xLabel': 'Time',
+    'yLabel': 'Temperature', 
+    'xUnit': 's', 
+    'yUnit': '°C', 
+    'yLowerBound': -15,
+    'yUpperBound': 40,
+    'warningValue': 25,
+    'dangerValue' : 35,
     'csvIndex' : 6
+}
+
+oxidizerBottleTemperature2 = {
+    'title': 'Ox. Bottle 2 Temperature',
+    'xLabel': 'Time',
+    'yLabel': 'Temperature', 
+    'xUnit': 's', 
+    'yUnit': '°C', 
+    'yLowerBound': -15,
+    'yUpperBound': 40,
+    'warningValue': 25,
+    'dangerValue' : 35,
+    'csvIndex' : 25
+}
+
+nitrogenPressure = {
+    'title': 'Nitrogen Pressure',
+    'xLabel': 'Time',
+    'yLabel': 'Pressure', 
+    'xUnit': 's', 
+    'yUnit': 'Bar', 
+    'yLowerBound': 0,
+    'yUpperBound': 80,
+    'warningValue': 40,
+    'dangerValue' : 60,
+    'csvIndex' : 21
 }
 
 linePressure = {
@@ -39,73 +72,21 @@ linePressure = {
     'xUnit': 's', 
     'yUnit': 'Bar', 
     'yLowerBound': 0,
-    'yUpperBound': 172,
-    'warningValue': 65,
-    'dangerValue' : 100,
-    'csvIndex' : 4
+    'yUpperBound': 80,
+    'warningValue': 40,
+    'dangerValue' : 60,
+    'csvIndex' : 2
 }
 
-heatingBlanketTemperature = {
-    'title': 'Bottle Temperature',
-    'xLabel': 'Time',
-    'yLabel': 'Temperature', 
-    'xUnit': 's', 
-    'yUnit': '°C', 
-    'yLowerBound': -40,
-    'yUpperBound': 125,
-    'warningValue': 25,
-    'dangerValue' : 35,
-    'csvIndex' : 8
-}
-
-nozzleTemperature = {
-    'title': 'Nozzle Temperature',
-    'xLabel': 'Time',
-    'yLabel': 'Temperature', 
-    'xUnit': 's', 
-    'yUnit': '°C', 
-    'yLowerBound': 0,
-    'yUpperBound': 600,
-    'warningValue': 0,
-    'dangerValue' : 0,
-    'csvIndex' : 10
-}
-
-loadCell= {
-    'title': 'Load Cell Force',
+loadCell = {
+    'title': 'Load',
     'xLabel': 'Time',
     'yLabel': 'Force', 
     'xUnit': 's', 
-    'yUnit': 'N', 
+    'yUnit': 'N',
     'yLowerBound': 0,
-    'yUpperBound': 1112,
-    'warningValue': 750,
-    'dangerValue' : 15,
-    'csvIndex' : 7
-}
-
-ambientTemperature = {
-    'title': 'Ambient Temperature',
-    'xLabel': 'Time',
-    'yLabel': 'Temperature', 
-    'xUnit': 's', 
-    'yUnit': '°C', 
-    'yLowerBound': 0,
-    'yUpperBound': 50,
-    'warningValue': 0,
-    'dangerValue' : 0,
-    'csvIndex' : 11
-}
-
-testyData = {
-    'title': 'Testy Data',
-    'xLabel': 'Time',
-    'yLabel': 'Temperature', 
-    'xUnit': 's', 
-    'yUnit': '°C', 
-    'yLowerBound': -50,
-    'yUpperBound': 1030,
-    'warningValue': 0,
-    'dangerValue' : 0,
-    'csvIndex' : 25
+    'yUpperBound': 1000,
+    'warningValue': 2000,
+    'dangerValue' : 2000,
+    'csvIndex' : 5
 }

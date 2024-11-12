@@ -21,7 +21,8 @@
         - 08/11/23: Successful implementation of animation with dummy data
 
     TODO:
-        - add message box for software mode, substate and arduino time
+        - add plot index, so multiple data can be displayed in the same plot. E.g. 2 blanket temps
+
 '''
 
 # ================= #
@@ -49,22 +50,26 @@ import resources.softwareDefinitions as softwareDefs
 # === SELECT DATA TO DISPLAY === #
 # ============================== #
 
-graphData = [dataDefs.chamberPressure, 
-             dataDefs.N2O_BottlePressure,
+# maximum 8 graph windows for readability, keep this in mind when updating graphData.   
+graphData = [dataDefs.oxidizerPressure1,
+             dataDefs.oxidizerPressure2,
+             dataDefs.nitrogenPressure,
              dataDefs.linePressure,
-             dataDefs.heatingBlanketTemperature,
-             dataDefs.nozzleTemperature,
-             dataDefs.loadCell,
-             dataDefs.ambientTemperature,
-             dataDefs.testyData]
+             dataDefs.oxidizerBottleTemperature1,
+             dataDefs.oxidizerBottleTemperature2,
+             dataDefs.loadCell]
 
-displayData = [dataDefs.N2O_BottlePressure,
-               dataDefs.heatingBlanketTemperature,
-               dataDefs.loadCell]
+displayData = [dataDefs.oxidizerPressure1,
+               dataDefs.oxidizerPressure2,
+               dataDefs.oxidizerBottleTemperature1,
+               dataDefs.oxidizerBottleTemperature2,
+               dataDefs.linePressure]
 
-indicatorData = [indicatorDefs.ignitionRelayIndicator, 
-                 indicatorDefs.mainValveIndicator, 
-                 indicatorDefs.heatingBlanketIndicator]
+indicatorData = [indicatorDefs.heatingRelayIndicator1, 
+                 indicatorDefs.heatingRelayIndicator2,
+                 indicatorDefs.oxidizerValve1,
+                 indicatorDefs.oxidizerValve2,
+                 indicatorDefs.ignitionRelayIndicator]
 
 softwareData = [softwareDefs.mode, 
                 softwareDefs.states, 
@@ -79,6 +84,7 @@ nIndicators   = len(indicatorData)
 # === Messages        === #
 # ======================= #
 
+# display message according to 'msgIndex' value in data
 messageStrings = [  "",  
                     "Running testing sequence\nTesting all OFF-states...\nRelease all buttons!\n",
                     "No button presses detected\n",
@@ -131,17 +137,17 @@ plt.rcParams['toolbar'] = 'None'
 # create interface figure and separate panels for the graphs, displays and indicators
 interface = plt.figure(facecolor='silver') 
 dataPanel, infoPanel = interface.subfigures(1, 2, width_ratios=[3,1]) 
-indicatorPanel, streamPanel = infoPanel.subfigures(2, 1, height_ratios=[3,2])
+indicatorPanel, streamPanel = infoPanel.subfigures(2, 1, height_ratios=[4,2])
 displayPanel, lightsPanel = indicatorPanel.subfigures(1,2)
 modePanel, logPanel = streamPanel.subfigures(1,2)
 
 # adjust background colors of the panels
 dataPanel.set_facecolor('silver')
-lightsPanel.set_facecolor('slategrey') 
-displayPanel.set_facecolor('slategrey')
-streamPanel.set_facecolor('slategrey')
-modePanel.set_facecolor('slategrey')
-logPanel.set_facecolor('slategrey')
+lightsPanel.set_facecolor('silver') 
+displayPanel.set_facecolor('silver')
+streamPanel.set_facecolor('silver')
+modePanel.set_facecolor('silver')
+logPanel.set_facecolor('silver')
 
 
 
@@ -159,37 +165,42 @@ dataPanel.subplots_adjust(left=0.05, right=0.99, bottom=0.03, top=0.97, wspace=0
 labelFontSize = 9
 tickFontSize  = 7
 nDataPoints   = 50 # the covered time span is then about nDataPoints * updateRate = 10000 ms = 10s
-dataLinewidth = 0.75
-warningLinewidth = 1
+dataLinewidth = 1.5
+warningLinewidth = 2
 
 # add titles and axis labels to the graphs
 # set limits and tick parameters
 for i in range(4):
     for j in range(2):
-        xLabel = '%s [%s]' % (graphData[i+j*4]['xLabel'], graphData[i+j*4]['xUnit'])
-        yLabel = '%s [%s]' % (graphData[i+j*4]['yLabel'], graphData[i+j*4]['yUnit'])
-        graphs[i,j].set_xlabel(xLabel, fontsize=labelFontSize)
-        graphs[i,j].set_ylabel(yLabel, fontsize=labelFontSize)
-        graphs[i,j].set_xlim(0, 1)
-        graphs[i,j].set_ylim(graphData[i+j*4]['yLowerBound'], graphData[i+j*4]['yUpperBound'])
-        graphs[i,j].set_title(graphData[i+j*4]['title'])
-        graphs[i,j].tick_params(axis='y', labelsize=tickFontSize)
-        graphs[i,j].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
-        graphs[i,j].axhline(graphData[i+j*4]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
-        graphs[i,j].grid() #linestyle='--')
+        if (i+j*4 < nGraphs):
+            xLabel = '%s [%s]' % (graphData[i+j*4]['xLabel'], graphData[i+j*4]['xUnit'])
+            yLabel = '%s [%s]' % (graphData[i+j*4]['yLabel'], graphData[i+j*4]['yUnit'])
+            graphs[i,j].set_xlabel(xLabel, fontsize=labelFontSize)
+            graphs[i,j].set_ylabel(yLabel, fontsize=labelFontSize)
+            graphs[i,j].set_xlim(0, 1)
+            graphs[i,j].set_ylim(graphData[i+j*4]['yLowerBound'], graphData[i+j*4]['yUpperBound'])
+            graphs[i,j].set_title(graphData[i+j*4]['title'])
+            graphs[i,j].tick_params(axis='y', labelsize=tickFontSize)
+            graphs[i,j].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
+            graphs[i,j].axhline(graphData[i+j*4]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
+            graphs[i,j].grid() #linestyle='--')
+        else:
+            graphs[i,j].remove()
 
 # add value indicators on the graphs
 graphIndicators= []
 for i in range(4):
     for j in range(2):
-        graphIndicators.append(graphs[i][j].text(0.85, 0.05 * (graphData[i + j*4]['yUpperBound'] - graphData[i + j*4]['yLowerBound']) + graphData[i + j*4]['yLowerBound'], '',  fontweight='bold'))
+        if (i+j*4 < nGraphs):   
+            graphIndicators.append(graphs[i][j].text(0.85, 0.05 * (graphData[i + j*4]['yUpperBound'] - graphData[i + j*4]['yLowerBound']) + graphData[i + j*4]['yLowerBound'], '',  fontweight='bold'))
 
 # initialize line artists
 dataLines = []
 for i in range(4):
     for j in range(2):
-        dataLines.append(graphs[i][j].plot([], [], 'o', markersize=0.5, linewidth=dataLinewidth)[0])
-
+        if (i+j*4 < nGraphs):
+            dataLines.append(graphs[i][j].plot([], [], '-', markersize=0.5, linewidth=dataLinewidth)[0])
+            
 # initialize lists for holding the line data
 x_data   = np.linspace(0, 1, nDataPoints) # common to all graphs
 y_data   = [[0] * nDataPoints for _ in range(nGraphs)]
@@ -381,8 +392,9 @@ def update(frame):
         averages[i] = gm.rollingAverage(y_data[i])
         artists[i].set_ydata(y_data[i])
     
-    for i in range(len(graphIndicators)):
-        graphIndicators[i].set_text('{:.1f} {:s}'.format(averages[i], graphData[i]['yUnit']))
+    # THIS DOES NOT WORK, NOOB INDEXING
+    #for i in range(len(graphIndicators)):
+    #    graphIndicators[i].set_text('{:.1f} {:s}'.format(averages[i], graphData[i]['yUnit']))
 
     # ----------------------------------------- #
     # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
@@ -419,9 +431,9 @@ def update(frame):
     text = []
     text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
     text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
-    ms = float(line[softwareData[2]['csvIndex']])
-    time = [float(t) for t in str(datetime.timedelta(milliseconds=ms)).split(':')]
-    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.0f}s'
+    us = float(line[softwareData[2]['csvIndex']])
+    time = [float(t) for t in str(datetime.timedelta(microseconds=us)).split(':')]
+    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.2f}s'
     text.append(str(time))
     
     for i in range(nTextDisplays):
@@ -434,7 +446,6 @@ def update(frame):
     # ------------------ #
     
     msgIndex = line[-1].strip('\n')
-    print(msgIndex)
     msg = messageStrings[int(msgIndex)]
 
     if msg != ' ':
@@ -451,7 +462,7 @@ plt.get_current_fig_manager().full_screen_toggle()
 # animation settings
 isUsingBlit = True
 isCachingFrameData = False
-updateRate = 16 # milli seconds: seems to be faster than data rate on average
+updateRate = 0 # plot as fast as possible
 
 
 

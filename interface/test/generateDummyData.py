@@ -15,10 +15,10 @@ open('dummyData.csv', 'w')
 
 # list for the row elements
 nData = 21
-nExtraData = 6
+nExtraData = 10 # time, A0-A5, D1-D3
 row = [0] * (nData + nExtraData)
 
-elapsed_time = 0 
+elapsed_time = 0
 time_increment = 0.01
 while True:
     with open('dummyData.csv', 'a', newline='') as csv_file:
@@ -29,37 +29,31 @@ while True:
            row[i] = 50 * np.sin(elapsed_time) + 50 
         
         # adjust indicator columns
-        if row[15] > 50:
+        if row[2] > 50:
+            row[12] = 1.0
+            row[13] = 1.0
             row[14] = 1.0
             row[15] = 1.0
+            row[16] = 1.0
             row[17] = 1.0
+            row[28] = 1.0
+            row[29] = 1.0
         else: 
+            row[12] = 0.0
+            row[13] = 0.0
             row[14] = 0.0
             row[15] = 0.0
+            row[16] = 0.0
             row[17] = 0.0
+            row[28] = 0.0
+            row[29] = 0.0
 
         # adjust time value
-        row[2] *= 1000
+        row[0] = elapsed_time * 1e6 # microsec
 
-        # adjust software columns
-        if row[21] < 17:
-            row[20] = 0.0
-            row[21] = 0.0
-        elif row[21] < 34:
-            row[20] = 1.0
-            row[21] = 1.0
-        elif row[21] < 51:
-            row[20] = 2.0
-            row[21] = 2.0
-        elif row[21] < 68:
-            row[20] = 3.0
-            row[21] = 3.0
-        elif row[21] < 75:
-            row[20] = 4.0
-            row[21] = 4.0
-        else:
-            row[20] = 5.0
-            row[21] = 5.0
+        # adjust software state and substate columns, epilepsy warning
+        row[18] = random.randrange(6) # SW mode
+        row[19] = random.randrange(6) # SW substate
 
         # message field
         new_msg = random.randrange(34)
