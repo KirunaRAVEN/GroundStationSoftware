@@ -1,34 +1,30 @@
 # ------- Index Guide 11 nov 2024 --------
 # csvIndex  Content
 #
-# 0         Arduino Mega time in us
-# 1         Oxidizer Feeding Pressure 2
-# 2         Line pressure
-# 3         Chamber Pressure
-# 4         Oxidizer Feeding Pressure 1
+# 0         Arduino Mega time in us         
+# 1         Line pressure
+# 2         Chamber Pressure
+# 3         N2O feeding pressure 1
+# 4         N2O feeding pressure 2
 # 5         Load Cell
-# 6         Oxidizer Bottle Temperature 1
-# 7         Not connected
+# 6         Bottle Temperature (isn't this the same as blanket temp)
+# 7         NULL
 # 8         Nozzle Temperature
 # 9         Piping Temperature
-# 10        Plume Temperature
-# 11        Dump Valve
-# 12        Heating Blanket Relay Status 1
-# 13        Ignition Button Status
-# 14        N2 Feeding Button Status
-# 15        Oxidizer Valve State 1
-# 16        Ignition (0 or 24 V at leads) State
-# 17        Oxidizer Valve State 1
+# 10        IR sensor
+# 11        Dump Button
+# 12        Heating blanket button (this is the same as blanket status 1 and 2)
+# 13        Ignition button
+# 14        N2 button
+# 15        oxidizer button
+# 16        Ignition status
+# 17        valve status
 # 18        Current SW mode
 # 19        Current SW substate
 # 20        Arduino Uno time in us
-# 21        A0: Nitrogen Pressure
-# 22        A1: Not connected
-# 23        A2: Not connected
-# 24        A3: Not connected
-# 25        A4: Oxidizer Bottle Temperature 2
-# 26        A5: Not connected
-# 27        D1: Not connected
-# 28        D2: Heating Blanket Relay Status 2
-# 29        D3: Oxidizer Valve State 2
-# 30        msgIndex (always pushed to end by serial_reader.py)
+# 21        N2 feeding pressure
+# 22        Bottle Temperature 1
+# 23        Bottle Temperature 2
+# 24        Bottle status 1
+# 25        Bottle status 2
+# 26        msgIndex (always pushed to end by serial_reader.py)
