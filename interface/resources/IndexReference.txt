@@ -13,7 +13,7 @@
 # 9         Piping Temperature
 # 10        IR sensor
 # 11        Dump Button
-# 12        Heating blanket button (this is the same as blanket status 1 and 2)
+# 12        Heating blanket button (this is the same as blanket status 1 and 2?)
 # 13        Ignition button
 # 14        N2 button
 # 15        oxidizer button
