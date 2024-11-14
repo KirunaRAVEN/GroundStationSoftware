@@ -7,24 +7,22 @@
 # 3         N2O feeding pressure 1
 # 4         N2O feeding pressure 2
 # 5         Load Cell
-# 6         Bottle Temperature (isn't this the same as blanket temp)
-# 7         NULL
-# 8         Nozzle Temperature
-# 9         Piping Temperature
-# 10        IR sensor
-# 11        Dump Button
-# 12        Heating blanket button (this is the same as blanket status 1 and 2?)
-# 13        Ignition button
-# 14        N2 button
-# 15        oxidizer button
-# 16        Ignition status
-# 17        valve status
-# 18        Current SW mode
-# 19        Current SW substate
-# 20        Arduino Uno time in us
-# 21        N2 feeding pressure
-# 22        Bottle Temperature 1
-# 23        Bottle Temperature 2
-# 24        Bottle status 1
-# 25        Bottle status 2
-# 26        msgIndex (always pushed to end by serial_reader.py)
+# 6         NULL
+# 7         Nozzle Temperature
+# 8         Piping Temperature
+# 9        IR sensor
+# 10        Dump Button
+# 11        Ignition button
+# 12        N2 button
+# 13        oxidizer button
+# 14        Ignition status
+# 15        valve status
+# 16        Current SW mode
+# 17        Current SW substate
+# 18        Arduino Uno time in us
+# 19        N2 feeding pressure
+# 20        Bottle Temperature 1
+# 21        Bottle Temperature 2
+# 22        Bottle status 1
+# 23        Bottle status 2
+# 24        msgIndex (always pushed to end by serial_reader.py)
