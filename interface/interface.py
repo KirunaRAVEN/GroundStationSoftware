@@ -488,7 +488,7 @@ def on_close(event):
 interface.canvas.mpl_connect('key_press_event', escape)
 interface.canvas.mpl_connect('close_event', on_close)
 
-fpath = 'dummyData.csv'
+fpath = 'data.csv'
 dataFile = open(fpath, 'r')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
