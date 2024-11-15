@@ -10,7 +10,7 @@ oxidizerPressure1 = {
     'yUpperBound': 80,
     'warningValue': 40,
     'dangerValue' : 60,
-    'csvIndex' : 4
+    'csvIndex' : 3
 }
 
 oxidizerPressure2 = {
@@ -23,7 +23,7 @@ oxidizerPressure2 = {
     'yUpperBound': 80,
     'warningValue': 40,
     'dangerValue' : 60,
-    'csvIndex' : 1
+    'csvIndex' : 4
 }
 
 oxidizerBottleTemperature1 = {
@@ -36,7 +36,7 @@ oxidizerBottleTemperature1 = {
     'yUpperBound': 40,
     'warningValue': 25,
     'dangerValue' : 35,
-    'csvIndex' : 6
+    'csvIndex' : 20
 }
 
 oxidizerBottleTemperature2 = {
@@ -49,7 +49,7 @@ oxidizerBottleTemperature2 = {
     'yUpperBound': 40,
     'warningValue': 25,
     'dangerValue' : 35,
-    'csvIndex' : 25
+    'csvIndex' : 21
 }
 
 nitrogenPressure = {
@@ -62,7 +62,7 @@ nitrogenPressure = {
     'yUpperBound': 80,
     'warningValue': 40,
     'dangerValue' : 60,
-    'csvIndex' : 21
+    'csvIndex' : 19
 }
 
 linePressure = {
@@ -75,7 +75,7 @@ linePressure = {
     'yUpperBound': 80,
     'warningValue': 40,
     'dangerValue' : 60,
-    'csvIndex' : 2
+    'csvIndex' : 1
 }
 
 loadCell = {

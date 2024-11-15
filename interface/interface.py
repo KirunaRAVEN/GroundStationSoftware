@@ -68,7 +68,6 @@ displayData = [dataDefs.oxidizerPressure1,
 indicatorData = [indicatorDefs.heatingRelayIndicator1, 
                  indicatorDefs.heatingRelayIndicator2,
                  indicatorDefs.oxidizerValve1,
-                 indicatorDefs.oxidizerValve2,
                  indicatorDefs.ignitionRelayIndicator]
 
 softwareData = [softwareDefs.mode, 
