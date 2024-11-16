@@ -170,34 +170,29 @@ warningLinewidth = 2
 # set limits and tick parameters
 for i in range(4):
     for j in range(2):
-        if (i+j*4 < nGraphs):
-            xLabel = '%s [%s]' % (graphData[i+j*4]['xLabel'], graphData[i+j*4]['xUnit'])
-            yLabel = '%s [%s]' % (graphData[i+j*4]['yLabel'], graphData[i+j*4]['yUnit'])
-            graphs[i,j].set_xlabel(xLabel, fontsize=labelFontSize)
-            graphs[i,j].set_ylabel(yLabel, fontsize=labelFontSize)
-            graphs[i,j].set_xlim(0, 1)
-            graphs[i,j].set_ylim(graphData[i+j*4]['yLowerBound'], graphData[i+j*4]['yUpperBound'])
-            graphs[i,j].set_title(graphData[i+j*4]['title'])
-            graphs[i,j].tick_params(axis='y', labelsize=tickFontSize)
-            graphs[i,j].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
-            graphs[i,j].axhline(graphData[i+j*4]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
-            graphs[i,j].grid() #linestyle='--')
-        else:
-            graphs[i,j].remove()
+        xLabel = '%s [%s]' % (graphData[i+j*4]['xLabel'], graphData[i+j*4]['xUnit'])
+        yLabel = '%s [%s]' % (graphData[i+j*4]['yLabel'], graphData[i+j*4]['yUnit'])
+        graphs[i,j].set_xlabel(xLabel, fontsize=labelFontSize)
+        graphs[i,j].set_ylabel(yLabel, fontsize=labelFontSize)
+        graphs[i,j].set_xlim(0, 1)
+        graphs[i,j].set_ylim(graphData[i+j*4]['yLowerBound'], graphData[i+j*4]['yUpperBound'])
+        graphs[i,j].set_title(graphData[i+j*4]['title'])
+        graphs[i,j].tick_params(axis='y', labelsize=tickFontSize)
+        graphs[i,j].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
+        graphs[i,j].axhline(graphData[i+j*4]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
+        graphs[i,j].grid() #linestyle='--')
 
 # add value indicators on the graphs
 graphIndicators= []
 for i in range(4):
-    for j in range(2):
-        if (i+j*4 < nGraphs):   
-            graphIndicators.append(graphs[i][j].text(0.85, 0.05 * (graphData[i + j*4]['yUpperBound'] - graphData[i + j*4]['yLowerBound']) + graphData[i + j*4]['yLowerBound'], '',  fontweight='bold'))
+    for j in range(2): 
+        graphIndicators.append(graphs[i][j].text(0.85, 0.05 * (graphData[i + j*4]['yUpperBound'] - graphData[i + j*4]['yLowerBound']) + graphData[i + j*4]['yLowerBound'], '',  fontweight='bold'))
 
 # initialize line artists
 dataLines = []
 for i in range(4):
     for j in range(2):
-        if (i+j*4 < nGraphs):
-            dataLines.append(graphs[i][j].plot([], [], '-', markersize=0.5, linewidth=dataLinewidth)[0])
+        dataLines.append(graphs[i][j].plot([], [], '-', markersize=0.5, linewidth=dataLinewidth)[0])
             
 # initialize lists for holding the line data
 x_data   = np.linspace(0, 1, nDataPoints) # common to all graphs
