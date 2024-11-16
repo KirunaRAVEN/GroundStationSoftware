@@ -346,6 +346,28 @@ last_pos = 0
 
 indicatorStates[0] = 1
 
+# Store the last valid line globally
+last_valid_line = None
+
+# ------------------------------------- #
+# --- Validate the data in CSV file --- #
+# ------------------------------------- #
+def validate_CSV_data(line):
+    global last_valid_line  # Reference the global variable
+
+    line = line.strip().split(',')
+
+    # Checking the first line to make sure it is not the header
+    if line[0] == "ArduinoMegaTime": 
+        return last_valid_line
+    # Checks if line contains 25 variables
+    if len(line) != 25:
+        return last_valid_line  # Returns last line if this is the case
+
+    # If the line contains 25 variables it changes last valid line to the current one and then returns the current one
+    last_valid_line = line
+    return line
+
 def update(frame):
     global indicatorStates
     global displayValues
