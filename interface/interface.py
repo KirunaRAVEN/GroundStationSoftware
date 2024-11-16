@@ -57,7 +57,8 @@ graphData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerBottleTemperature2,
              dataDefs.nitrogenPressure,
              dataDefs.linePressure,
-             dataDefs.loadCell]
+             dataDefs.loadCell,
+             dataDefs.placeholder1]
 
 displayData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
