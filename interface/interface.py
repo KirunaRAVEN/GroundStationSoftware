@@ -57,7 +57,8 @@ graphData = [dataDefs.oxidizerPressure1,
              dataDefs.linePressure,
              dataDefs.oxidizerBottleTemperature1,
              dataDefs.oxidizerBottleTemperature2,
-             dataDefs.loadCell]
+             dataDefs.loadCell,
+             dataDefs.nozzleTemperature]
 
 displayData = [dataDefs.oxidizerPressure1,
                dataDefs.oxidizerPressure2,
@@ -355,18 +356,19 @@ last_valid_line = None
 def validate_CSV_data(line):
     global last_valid_line  # Reference the global variable
 
-    line = line.strip().split(',')
+    #line = line.strip().split(',')
 
     # Checking the first line to make sure it is not the header
+    print(line[0])
     if line[0] == "ArduinoMegaTime": 
         return last_valid_line
     # Checks if line contains 25 variables
-    if len(line) != 25:
-        return last_valid_line  # Returns last line if this is the case
+    #if len(line) != 25:
+    #    return last_valid_line  # Returns last line if this is the case
 
     # If the line contains 25 variables it changes last valid line to the current one and then returns the current one
     last_valid_line = line
-    return line 
+    return line
 
 def update(frame):
     global indicatorStates
@@ -387,12 +389,14 @@ def update(frame):
     cuntr = 0
     for line in csv_reader:
         cuntr += 1
-        if cuntr == 11:
+        if cuntr == 2:
             for line2 in csv_reader:
                 pass
             break
 
-        validate_CSV_data(line)
+        line = validate_CSV_data(line)
+        if line == None:
+            continue
         
         # ---------------------------- #
         # --- UPDATE DATA IN PLOTS --- #
