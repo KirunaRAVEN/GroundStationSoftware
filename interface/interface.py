@@ -366,7 +366,7 @@ def validate_CSV_data(line):
 
     # If the line contains 25 variables it changes last valid line to the current one and then returns the current one
     last_valid_line = line
-    return line
+    return line 
 
 def update(frame):
     global indicatorStates
@@ -391,6 +391,8 @@ def update(frame):
             for line2 in csv_reader:
                 pass
             break
+
+        validate_CSV_data(line)
         
         # ---------------------------- #
         # --- UPDATE DATA IN PLOTS --- #
