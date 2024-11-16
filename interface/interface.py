@@ -382,14 +382,19 @@ def update(frame):
     csv_reader = csv.reader(csv_file)
     csv_file.seek(last_pos)
 
-    cuntr = 0
+    SkipUntilEnd = False
     for line in csv_reader:
-        cuntr += 1
-        if cuntr == 2:
+        if SkipUntilEnd:
             for line2 in csv_reader:
-                pass
-            break
-
+                if int(line2[-1]) != 0:
+                    SkipUntilEnd = False
+                    break
+            else:
+                break
+        
+        SkipUntilEnd = True
+            
+            
         line = validate_CSV_data(line)
         if line == None:
             continue
