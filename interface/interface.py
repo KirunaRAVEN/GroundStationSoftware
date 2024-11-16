@@ -342,121 +342,123 @@ nDisplayArtists   = len(displayArtists)
 
 artists = graphArtists + graphIndicators + indicatorArtists + displayArtists + logArtists
 
-lastFilePosition = 0
+last_pos = 0
 
 indicatorStates[0] = 1
 
 def update(frame):
-    global lastFilePosition
     global indicatorStates
     global displayValues
+
+    print("new update call")
     
     # ------------------------------- #
     # --- READ DATA FROM CSV FILE --- #
     # ------------------------------- #
     
-    line = dataFile.readline().split(',')
+    #line = dataFile.readline().split(',')
+    global csv_file
+    global last_pos
+    csv_reader = csv.reader(csv_file)
+    csv_file.seek(last_pos)
 
-    '''
-    fpath = 'dummyData.csv'
-    with open(fpath, 'r', newline='') as dataFile:
-        dataFile.seek(lastFilePosition, 0)
-        csvReader = csv.reader(dataFile)
+    cuntr = 0
+    for line in csv_reader:
+        cuntr += 1
+        if cuntr == 11:
+            for line2 in csv_reader:
+                pass
+            break
         
+        # ---------------------------- #
+        # --- UPDATE DATA IN PLOTS --- #
+        # ---------------------------- #
+
         weight = 0
-        for row in csvReader:
-            for i in range(nGraphs):
-                y_data[i].pop(0)
-                #y_data[i].append(float(row[graphData[i]['csvIndex']]))
-                y_data[i].append(gm.lerp(y_data[i][-1], float(row[graphData[i]['csvIndex']]), weight))
-            if row[-1] != ' ':
-                msgIsUpdated = True
-                msg = row[-1]
+        for i in range(nGraphs):
+            # this trick is from here:
+            # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
+            y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
 
-        lastFilePosition = dataFile.tell()
-    '''
+        # update the data and average lines and calculate averages
+        for i in range(nGraphs):
+            averages[i] = gm.rollingAverage(y_data[i])
+            artists[i].set_ydata(y_data[i])
 
-    # ---------------------------- #
-    # --- UPDATE DATA IN PLOTS --- #
-    # ---------------------------- #
+        print("updated data in plots")
 
-    weight = 0
-    for i in range(nGraphs):
-        # this trick is from here:
-        # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
-        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
-        
-    # update the data and average lines and calculate averages
-    for i in range(nGraphs):
-        averages[i] = gm.rollingAverage(y_data[i])
-        artists[i].set_ydata(y_data[i])
-    
-    # THIS DOES NOT WORK, NOOB INDEXING
-    #for i in range(len(graphIndicators)):
-    #    graphIndicators[i].set_text('{:.1f} {:s}'.format(averages[i], graphData[i]['yUnit']))
+        # ----------------------------------------- #
+        # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
+        # ----------------------------------------- #
 
-    # ----------------------------------------- #
-    # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
-    # ----------------------------------------- #
+        # get the indicator states and update the indicators
+        for i in range(nIndicators):
+            indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
+            indicatorObjects[i].setState(indicatorStates[i])
 
-    # get the indicator states and update the indicators
-    for i in range(nIndicators):
-        indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
-        indicatorObjects[i].setState(indicatorStates[i])
+        print("updated indicator states")
 
-    # ----------------------------- #
-    # --- UPDATE DISPLAY VALUES --- #
-    # ----------------------------- #
-    
-    for i in range(nDataDisplays):
-        displayValues[i] = averages[i] # change this once new indexing going on
-        displayObjects[i].setValue(displayValues[i])
-        
-        artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
-    
-        # update color
-        displayObjects[i].value = averages[i]
-        if averages[i] >= displayData[i]['dangerValue']:
-            artists[artistIndex].set_color('red') 
-        elif averages[i] >= displayData[i]['warningValue']:
-            artists[artistIndex].set_color('darkorange')  
-        else :
-            artists[artistIndex].set_color('green')
+        # ----------------------------- #
+        # --- UPDATE DISPLAY VALUES --- #
+        # ----------------------------- #
 
-    # -------------------------------- #
-    # --- UPDATE SOFTWARE DISPLAYS --- #
-    # -------------------------------- #
+        for i in range(nDataDisplays):
+            displayValues[i] = averages[i] # change this once new indexing going on
+            displayObjects[i].setValue(displayValues[i])
 
-    text = []
-    text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
-    text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
-    us = float(line[softwareData[2]['csvIndex']])
-    time = [float(t) for t in str(datetime.timedelta(microseconds=us)).split(':')]
-    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.2f}s'
-    text.append(str(time))
-    
-    for i in range(nTextDisplays):
-        displayObjects[nDataDisplays + i].setText(text[i])
-        # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
-        # update text
+            artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
 
-    # ------------------ #
-    # --- UPDATE LOG --- #
-    # ------------------ #
-    
-    msgIndex = line[-1].strip('\n')
-    msg = messageStrings[int(msgIndex)]
+            # update color
+            displayObjects[i].value = averages[i]
+            if averages[i] >= displayData[i]['dangerValue']:
+                artists[artistIndex].set_color('red') 
+            elif averages[i] >= displayData[i]['warningValue']:
+                artists[artistIndex].set_color('darkorange')  
+            else :
+                artists[artistIndex].set_color('green')
 
-    if msg != ' ':
-        logObject.updateLog(msg)
-    
+        print("updated display values")
 
+        # -------------------------------- #
+        # --- UPDATE SOFTWARE DISPLAYS --- #
+        # -------------------------------- #
+
+        text = []
+        text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
+        text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
+        us = float(line[softwareData[2]['csvIndex']])
+        time = [float(t) for t in str(datetime.timedelta(microseconds=us)).split(':')]
+        time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.2f}s'
+        text.append(str(time))
+
+        for i in range(nTextDisplays):
+            displayObjects[nDataDisplays + i].setText(text[i])
+            # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
+            # update text
+
+        print("updated software displays")
+
+        # ------------------ #
+        # --- UPDATE LOG --- #
+        # ------------------ #
+
+        msgIndex = line[-1].strip('\n')
+        msg = messageStrings[int(msgIndex)]
+
+        if msg != ' ':
+            logObject.updateLog(msg)
+
+        print("updated log")
+
+    last_pos = csv_file.tell()
+    print("returning artists...")
     return artists
 
 
 
 # toggle fullscreen
-plt.get_current_fig_manager().full_screen_toggle()
+# done elsewhere
+#plt.get_current_fig_manager().full_screen_toggle()
 
 # animation settings
 isUsingBlit = True
@@ -488,10 +490,22 @@ def on_close(event):
 interface.canvas.mpl_connect('key_press_event', escape)
 interface.canvas.mpl_connect('close_event', on_close)
 
+'''
 fpath = 'data.csv'
 dataFile = open(fpath, 'r')
 # animate the interface
 interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
 plt.show()
+'''
 
-dataFile.close()
+csv_file = None
+# otherwise, read the new data from the file
+with open('data.csv', 'r') as csv_file:
+
+    # Make the window fullscreen
+    manager = plt.get_current_fig_manager()
+    manager.full_screen_toggle()
+
+    interfaceAnimation = ani.FuncAnimation(interface, update, interval=updateRate, blit=isUsingBlit, cache_frame_data=isCachingFrameData)
+
+    plt.show()
