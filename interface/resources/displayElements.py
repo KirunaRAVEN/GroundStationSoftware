@@ -57,8 +57,8 @@ class textBox:
 
 class logBox:
     def __init__(self):
-        self.maxLines = 17
-        self.log = [' '] * self.maxLines 
+        self.maxLines = 13
+        self.log = [''] * self.maxLines
         self.display = Text(0.025, 1.575, self.log, wrap=False, horizontalalignment='left', verticalalignment='top')
         self.outline = plt.Rectangle((0, 0), 1.0, 1.6, color='black')
         self.inner = plt.Rectangle((0.0125, 0.0125), 0.975, 1.575, color='white')
@@ -67,4 +67,4 @@ class logBox:
     def updateLog(self, msg):
         self.log.pop(0)
         self.log.append(msg)
-        self.display.set_text('\n'.join('{:s}'.format(_msg) for _msg in self.log))
+        self.display.set_text(''.join('{:s}'.format(_msg) for _msg in self.log))

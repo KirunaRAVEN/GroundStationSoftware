@@ -6,7 +6,7 @@ mode = {
 
 states = {
     'title' : 'Substate',
-    'states' : ['ALL_OFF', 'IGNIT_ON', 'VALVE_ON', 'IGNIT_OFF', 'VALVE_OFF', 'FINISHED'],
+    'states' : ['ALL_OFF', 'IGNIT_ON', 'VALVE_ON', 'IGNIT_OFF', 'VALVE_OFF', 'PURGING', 'FINISHED'],
     'csvIndex' : 17
 }
 

@@ -64,6 +64,8 @@ displayData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
              dataDefs.oxidizerBottleTemperature1,
              dataDefs.oxidizerBottleTemperature2]
+             
+displayDataInds = [0,2,4,6] #Biggest bandaid, needs fixing
 
 indicatorData = [indicatorDefs.heatingRelayIndicator1, 
                  indicatorDefs.heatingRelayIndicator2,
@@ -84,7 +86,7 @@ nIndicators   = len(indicatorData)
 # ======================= #
 
 # display message according to 'msgIndex' value in data
-messageStrings = [  "",  
+messageStrings = [  " ",  
                     "Running testing sequence\nTesting all OFF-states...\nRelease all buttons!\n",
                     "No button presses detected\n",
                     "Please release the oxidizer valve button.\n",
@@ -357,8 +359,8 @@ def validate_CSV_data(line):
     if line[0] == "ArduinoMegaTime": 
         return last_valid_line
     # Checks if line contains 25 variables
-    #if len(line) != 25:
-    #    return last_valid_line  # Returns last line if this is the case
+    if len(line) != 25:
+        return last_valid_line  # Returns last line if this is the case
 
     # If the line contains 25 variables it changes last valid line to the current one and then returns the current one
     last_valid_line = line
@@ -397,10 +399,15 @@ def update(frame):
         # ---------------------------- #
 
         weight = 0
+        
+        mapping = [0,2,4,6,1,3,5,7]
         for i in range(nGraphs):
+            j=mapping[i]
+#        for i in range(4):
+#            for j in range(2):
             # this trick is from here:
             # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
-            y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
+            y_data[j][:-1] = y_data[j][1:]; y_data[j][-1] = gm.lerp(y_data[j][-1], float(line[graphData[i]['csvIndex']]), weight)
 
         # update the data and average lines and calculate averages
         for i in range(nGraphs):
@@ -425,7 +432,8 @@ def update(frame):
         # ----------------------------- #
 
         for i in range(nDataDisplays):
-            displayValues[i] = averages[i] # change this once new indexing going on
+            not_i = displayDataInds[i]
+            displayValues[i] = averages[not_i] # change this once new indexing going on
             displayObjects[i].setValue(displayValues[i])
 
             artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
