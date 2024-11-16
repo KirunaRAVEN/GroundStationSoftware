@@ -53,19 +53,16 @@ import resources.softwareDefinitions as softwareDefs
 # maximum 8 graph windows for readability, keep this in mind when updating graphData.   
 graphData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
-             dataDefs.nitrogenPressure,
-             dataDefs.linePressure,
              dataDefs.oxidizerBottleTemperature1,
              dataDefs.oxidizerBottleTemperature2,
+             dataDefs.nitrogenPressure,
+             dataDefs.linePressure,
              dataDefs.loadCell]
 
 displayData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
-             dataDefs.nitrogenPressure,
-             dataDefs.linePressure,
              dataDefs.oxidizerBottleTemperature1,
-             dataDefs.oxidizerBottleTemperature2,
-             dataDefs.loadCell]
+             dataDefs.oxidizerBottleTemperature2]
 
 indicatorData = [indicatorDefs.heatingRelayIndicator1, 
                  indicatorDefs.heatingRelayIndicator2,
