@@ -37,6 +37,7 @@ import numpy as np
 import csv
 import shutil
 import datetime
+import math
 
 # internal (functions)
 # from update import update 
@@ -57,15 +58,13 @@ graphData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerBottleTemperature2,
              dataDefs.nitrogenPressure,
              dataDefs.linePressure,
-             dataDefs.loadCell,
-             dataDefs.placeholder1]
+             dataDefs.loadCell]
 
 displayData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
              dataDefs.oxidizerBottleTemperature1,
              dataDefs.oxidizerBottleTemperature2]
-             
-displayDataInds = [0,2,4,6] #Biggest bandaid, needs fixing
+
 
 indicatorData = [indicatorDefs.heatingRelayIndicator1, 
                  indicatorDefs.heatingRelayIndicator2,
@@ -156,8 +155,8 @@ logPanel.set_facecolor('silver')
 # --- SETUP GRAPHS IN THE DATA PANEL --- #
 # -------------------------------------- #
 
-# create subplot layout (4 rows and 2 columns) for the graphs
-graphs = dataPanel.subplots(4, 2)
+# create subplot layout for the graphs with 2 columns and rows depends on each nGraphs
+graphs = dataPanel.subplots(math.ceil(nGraphs / 2), 2)
 
 # adjust spacing so that graphs don't overlap and fill out whole panel
 dataPanel.subplots_adjust(left=0.05, right=0.99, bottom=0.03, top=0.97, wspace=0.15, hspace=0.4)
@@ -171,6 +170,20 @@ warningLinewidth = 2
 
 # add titles and axis labels to the graphs
 # set limits and tick parameters
+for i in range(nGraphs):
+    xLabel = '%s [%s]' % (graphData[i]['xLabel'], graphData[i]['xUnit'])
+    yLabel = '%s [%s]' % (graphData[i]['yLabel'], graphData[i]['yUnit'])
+    #i // 2, i % 2 is used to calculate row and column indices given we have 2 columns per row (hopefully works)
+    graphs[i // 2, i % 2].set_xlabel(xLabel, fontsize=labelFontSize)
+    graphs[i // 2, i % 2].set_ylabel(yLabel, fontsize=labelFontSize)
+    graphs[i // 2, i % 2].set_xlim(0, 1)
+    graphs[i // 2, i % 2].set_ylim(graphData[i]['yLowerBound'], graphData[i]['yUpperBound'])
+    graphs[i // 2, i % 2].set_title(graphData[i]['title'])
+    graphs[i // 2, i % 2].tick_params(axis='y', labelsize=tickFontSize)
+    graphs[i // 2, i % 2].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
+    graphs[i // 2, i % 2].axhline(graphData[i]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
+    graphs[i // 2, i % 2].grid() #linestyle='--')
+'''
 for i in range(4):
     for j in range(2):
         xLabel = '%s [%s]' % (graphData[i+j*4]['xLabel'], graphData[i+j*4]['xUnit'])
@@ -184,19 +197,29 @@ for i in range(4):
         graphs[i,j].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False) 
         graphs[i,j].axhline(graphData[i+j*4]['warningValue'], color='red', linestyle=':', linewidth=warningLinewidth)
         graphs[i,j].grid() #linestyle='--')
-
+'''
 # add value indicators on the graphs
 graphIndicators= []
+for i in range(nGraphs):
+    graphIndicators.append(graphs[i // 2][i % 2].text(0.85, 0.05 * (graphData[i]['yUpperBound'] - graphData[i]['yLowerBound']) + graphData[i]['yLowerBound'], '',  fontweight='bold'))
+'''
 for i in range(4):
     for j in range(2): 
         graphIndicators.append(graphs[i][j].text(0.85, 0.05 * (graphData[i + j*4]['yUpperBound'] - graphData[i + j*4]['yLowerBound']) + graphData[i + j*4]['yLowerBound'], '',  fontweight='bold'))
-
+'''
 # initialize line artists
 dataLines = []
+for i in range(nGraphs):
+    dataLines.append(graphs[i // 2][i % 2].plot([], [], '-', markersize=0.5, linewidth=dataLinewidth)[0])
+'''
 for i in range(4):
     for j in range(2):
         dataLines.append(graphs[i][j].plot([], [], '-', markersize=0.5, linewidth=dataLinewidth)[0])
-            
+'''
+#remove unused plots in the 4*2 grid by starting at nGraphs and ending at 8
+for i in range(nGraphs, 8):
+    graphs[i // 2, i % 2].axis('off')
+
 # initialize lists for holding the line data
 x_data   = np.linspace(0, 1, nDataPoints) # common to all graphs
 y_data   = [[0] * nDataPoints for _ in range(nGraphs)]
@@ -351,7 +374,6 @@ last_valid_line = None
 # ------------------------------------- #
 def validate_CSV_data(line):
     global last_valid_line  # Reference the global variable
-
     #line = line.strip().split(',')
 
     # Checking the first line to make sure it is not the header
@@ -379,9 +401,10 @@ def update(frame):
     #line = dataFile.readline().split(',')
     global csv_file
     global last_pos
-    csv_reader = csv.reader(csv_file)
-    csv_file.seek(last_pos)
 
+    csv_reader = csv.reader(csv_file)
+    #csv_file.seek(last_pos)
+    '''
     SkipUntilEnd = False
     for line in csv_reader:
         if SkipUntilEnd:
@@ -393,99 +416,107 @@ def update(frame):
                 break
         
         SkipUntilEnd = True
-            
-            
-        line = validate_CSV_data(line)
-        if line == None:
-            continue
-        
-        # ---------------------------- #
-        # --- UPDATE DATA IN PLOTS --- #
-        # ---------------------------- #
+    ''' 
 
-        weight = 0
-        
-        mapping = [0,2,4,6,1,3,5,7]
-        for i in range(nGraphs):
-            j=mapping[i]
+    line = next(csv_reader, None)
+    if line is None:  
+        return artists
+    
+    line = validate_CSV_data(line)
+    
+    # ---------------------------- #
+    # --- UPDATE DATA IN PLOTS --- #
+    # ---------------------------- #
+
+    weight = 0
+    #updates to work with the more modular software
+    for i in range(nGraphs):
+        y_data[i][:-1] = y_data[i][1:]; y_data[i][-1] = gm.lerp(y_data[i][-1], float(line[graphData[i]['csvIndex']]), weight)
+    
+    # update the data and average lines and calculate averages
+    for i in range(nGraphs):
+        averages[i] = gm.rollingAverage(y_data[i])
+        artists[i].set_ydata(y_data[i])
+    '''
+    mapping = [0,2,4,6,1,3,5,7]
+    for i in range(nGraphs):
+        j=mapping[i]
 #        for i in range(4):
 #            for j in range(2):
-            # this trick is from here:
-            # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
-            y_data[j][:-1] = y_data[j][1:]; y_data[j][-1] = gm.lerp(y_data[j][-1], float(line[graphData[i]['csvIndex']]), weight)
+        # this trick is from here:
+        # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
+        y_data[j][:-1] = y_data[j][1:]; y_data[j][-1] = gm.lerp(y_data[j][-1], float(line[graphData[i]['csvIndex']]), weight)
 
-        # update the data and average lines and calculate averages
-        for i in range(nGraphs):
-            averages[i] = gm.rollingAverage(y_data[i])
-            artists[i].set_ydata(y_data[i])
+    # update the data and average lines and calculate averages
+    for i in range(nGraphs):
+        averages[i] = gm.rollingAverage(y_data[i])
+        artists[i].set_ydata(y_data[i])
+    '''
+    print("updated data in plots")
 
-        print("updated data in plots")
+    # ----------------------------------------- #
+    # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
+    # ----------------------------------------- #
 
-        # ----------------------------------------- #
-        # --- DUMMY UPDATE THE INDICATOR LIGHTS --- #
-        # ----------------------------------------- #
+    # get the indicator states and update the indicators
+    for i in range(nIndicators):
+        indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
+        indicatorObjects[i].setState(indicatorStates[i])
 
-        # get the indicator states and update the indicators
-        for i in range(nIndicators):
-            indicatorStates[i] = int(float(line[indicatorData[i]['csvIndex']]))
-            indicatorObjects[i].setState(indicatorStates[i])
+    print("updated indicator states")
 
-        print("updated indicator states")
+    # ----------------------------- #
+    # --- UPDATE DISPLAY VALUES --- #
+    # ----------------------------- #
 
-        # ----------------------------- #
-        # --- UPDATE DISPLAY VALUES --- #
-        # ----------------------------- #
+    for i in range(nDataDisplays):
+        displayValues[i] = averages[i] # change this once new indexing going on
+        displayObjects[i].setValue(displayValues[i])
 
-        for i in range(nDataDisplays):
-            not_i = displayDataInds[i]
-            displayValues[i] = averages[not_i] # change this once new indexing going on
-            displayObjects[i].setValue(displayValues[i])
+        artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
 
-            artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3*i + 2 
+        # update color
+        displayObjects[i].value = averages[i]
+        if averages[i] >= displayData[i]['dangerValue']:
+            artists[artistIndex].set_color('red') 
+        elif averages[i] >= displayData[i]['warningValue']:
+            artists[artistIndex].set_color('darkorange')  
+        else :
+            artists[artistIndex].set_color('green')
 
-            # update color
-            displayObjects[i].value = averages[i]
-            if averages[i] >= displayData[i]['dangerValue']:
-                artists[artistIndex].set_color('red') 
-            elif averages[i] >= displayData[i]['warningValue']:
-                artists[artistIndex].set_color('darkorange')  
-            else :
-                artists[artistIndex].set_color('green')
+    print("updated display values")
 
-        print("updated display values")
+    # -------------------------------- #
+    # --- UPDATE SOFTWARE DISPLAYS --- #
+    # -------------------------------- #
 
-        # -------------------------------- #
-        # --- UPDATE SOFTWARE DISPLAYS --- #
-        # -------------------------------- #
+    text = []
+    text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
+    text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
+    us = float(line[softwareData[2]['csvIndex']])
+    time = [float(t) for t in str(datetime.timedelta(microseconds=us)).split(':')]
+    time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.2f}s'
+    text.append(str(time))
 
-        text = []
-        text.append(softwareData[0]['modes'][int(float(line[softwareData[0]['csvIndex']]))])
-        text.append(softwareData[1]['states'][int(float(line[softwareData[1]['csvIndex']]))])
-        us = float(line[softwareData[2]['csvIndex']])
-        time = [float(t) for t in str(datetime.timedelta(microseconds=us)).split(':')]
-        time = f'{time[0]:.0f}h {time[1]:.0f}m {time[2]:.2f}s'
-        text.append(str(time))
+    for i in range(nTextDisplays):
+        displayObjects[nDataDisplays + i].setText(text[i])
+        # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
+        # update text
 
-        for i in range(nTextDisplays):
-            displayObjects[nDataDisplays + i].setText(text[i])
-            # artistIndex = nGraphArtists + len(graphIndicators) + nIndicatorArtists + 3 * nDataDisplays + 2 + i
-            # update text
+    print("updated software displays")
 
-        print("updated software displays")
+    # ------------------ #
+    # --- UPDATE LOG --- #
+    # ------------------ #
 
-        # ------------------ #
-        # --- UPDATE LOG --- #
-        # ------------------ #
+    msgIndex = line[-1].strip('\n')
+    msg = messageStrings[int(msgIndex)]
 
-        msgIndex = line[-1].strip('\n')
-        msg = messageStrings[int(msgIndex)]
+    if msg != ' ':
+        logObject.updateLog(msg)
 
-        if msg != ' ':
-            logObject.updateLog(msg)
-
-        print("updated log")
-
-    last_pos = csv_file.tell()
+    print("updated log")
+    #last_pos = csv_file.tell()
     print("returning artists...")
     return artists
 

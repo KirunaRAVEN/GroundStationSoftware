@@ -90,16 +90,3 @@ loadCell = {
     'dangerValue' : 2000,
     'csvIndex' : 5
 }
-
-placeholder1 = {
-    'title': 'placeholder',
-    'xLabel': 'Time',
-    'yLabel': 'Force', 
-    'xUnit': 's', 
-    'yUnit': 'N',
-    'yLowerBound': 0,
-    'yUpperBound': 1000,
-    'warningValue': 2000,
-    'dangerValue' : 2000,
-    'csvIndex' : 5
-}
