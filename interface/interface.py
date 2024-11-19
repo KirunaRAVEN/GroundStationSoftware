@@ -63,7 +63,8 @@ graphData = [dataDefs.oxidizerPressure1,
 displayData = [dataDefs.oxidizerPressure1,
              dataDefs.oxidizerPressure2,
              dataDefs.oxidizerBottleTemperature1,
-             dataDefs.oxidizerBottleTemperature2]
+             dataDefs.oxidizerBottleTemperature2,
+             dataDefs.linePressure]
 
 
 indicatorData = [indicatorDefs.heatingRelayIndicator1, 
