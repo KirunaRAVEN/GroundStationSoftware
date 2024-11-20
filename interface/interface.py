@@ -389,6 +389,45 @@ def validate_CSV_data(line):
     last_valid_line = line
     return line
 
+
+chunk = 100
+last_place = 0
+# ------------------------------------------------------------- #
+# --- A new read function introduced to increase read speed --- #
+# ------------------------------------------------------------- #
+def read_data_fast(csv_file):
+    global chunk
+    global last_place
+    #makes sure we always start reading the file from the last position
+    csv_file.seek(last_place)
+    #csv_reader = csv.reader(csv_file)
+    lines = [] #used to store the chunks of data
+
+    #checks for a line containing a message, if a message was not found within the chunk it return the last line in the chunk
+    for i in range(chunk):
+        line = csv_file.readline()
+        #checks for EOF 
+        if not line:
+            break
+        line = line.strip().split(',')
+        #checks for header
+        if line[0] == "ArduinoMegaTime" or len(line) != 25:
+            continue
+
+        #used to store each line witin a chunk to lines
+        lines.append(line)
+
+        #check if the chunk contains a message, if so instantly returns it (no more missed messages)
+        if int(line[24]) > 0:
+            last_place = csv_file.tell()
+            return line
+
+    last_place = csv_file.tell()
+    #returns the last element in lines if there is no line then it returns None
+    return lines[-1] if lines else None
+
+        
+
 def update(frame):
     global indicatorStates
     global displayValues
@@ -403,7 +442,6 @@ def update(frame):
     global csv_file
     global last_pos
 
-    csv_reader = csv.reader(csv_file)
     #csv_file.seek(last_pos)
     '''
     SkipUntilEnd = False
@@ -419,11 +457,13 @@ def update(frame):
         SkipUntilEnd = True
     ''' 
 
-    line = next(csv_reader, None)
+    line = read_data_fast(csv_file)
     if line is None:  
         return artists
     
     line = validate_CSV_data(line)
+    if line is None:
+        return artists
     
     # ---------------------------- #
     # --- UPDATE DATA IN PLOTS --- #
@@ -568,7 +608,6 @@ plt.show()
 csv_file = None
 # otherwise, read the new data from the file
 with open('data.csv', 'r') as csv_file:
-
     # Make the window fullscreen
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
