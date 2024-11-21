@@ -390,7 +390,7 @@ def validate_CSV_data(line):
     return line
 
 
-chunk = 100
+chunk = 300
 last_place = 0
 # ------------------------------------------------------------- #
 # --- A new read function introduced to increase read speed --- #
